@@ -125,15 +125,18 @@ class DataProcessor(DatabaseHandler):
         self._session.flush()
         return newContent.id
 
-
     def delContent(self, outer_id):
         """
         Deletes content and all its resources
         :param outer_id: from dump
         :return: content_id
         """
-        self._session.query(Content.id).filter_by(outer_id=outer_id).delete()
+        result = self._session.query(Content.id). \
+            filter_by(outer_id=outer_id).delete()
         self._session.flush()
+        # [False, True][result] will fail
+        # if outer_id uniqueness constraint will be disabled.
+        return result > 0
 
     def getOuterIDHashes(self):
         # The set is faster because unsorted

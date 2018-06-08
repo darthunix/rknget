@@ -125,17 +125,6 @@ class DBOperator(DataProcessor):
             group_by(Entitytype.id).all()
         return self._outputQueryRows(rows)
 
-    def delContent(self, outer_id):
-        """
-        Deletes content from the table.
-        :return: True if deleted, False otherwise
-        """
-        result = self._session.query(Content). \
-            filter_by(outer_id=outer_id). \
-            delete()
-
-        return [False, True][result]
-
     def getLastDumpInfo(self):
         """
         The same function as the dataprocessing's one.

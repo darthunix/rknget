@@ -41,3 +41,10 @@ def getBlockedIPCount(connstr):
             )
     )
     return ipNum
+
+
+def getDumpLag(connstr):
+    ts = DBMonitor(connstr).getDumpLagSec()
+    if ts is None:
+        return -1
+    return ts
