@@ -10,8 +10,6 @@ import ssl
 sys.path.append('../')
 from common import webconn, utils
 
-PROCNAME = __file__.split(os.path.sep)[-1].split('.')[0]
-
 
 def _base64httpcreds(user, password):
     # Encoding 'user:password' string to base64 and then to ASCII string back.
@@ -121,7 +119,7 @@ def main():
         utils.print_help()
         return 0
 
-    config = utils.initConf(configPath)
+    config = utils.initConf(configPath, __file__)
 
     logger = utils.initLog(**config['Logging'])
     logger.debug('Starting with config:\n' + str(config))
@@ -129,7 +127,7 @@ def main():
     try:
         running = webconn.call(module='api.procutils',
                                method='checkRunning',
-                               procname=PROCNAME,
+                               procname=config['Global']['procname'],
                                **config['API'])
     except Exception as e:
             logger.critical('Couldn\'t obtain information from the database\n' + str(e))
@@ -140,7 +138,7 @@ def main():
     # Getting PID
     log_id = webconn.call(module='api.procutils',
                           method='addLogEntry',
-                          procname=PROCNAME,
+                          procname=config['Global']['procname'],
                           **config['API'])
     try:
         # Fetching http restrictions

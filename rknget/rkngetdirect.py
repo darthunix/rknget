@@ -22,8 +22,6 @@ from common import utils
 
 CONFIG_PATH = 'config.yml'
 
-PROCNAME = __file__.split(os.path.sep)[-1].split('.')[0]
-
 
 def main():
     configPath = utils.confpath_argv()
@@ -31,7 +29,7 @@ def main():
         utils.print_help()
         return 0
 
-    config = utils.initConf(configPath)
+    config = utils.initConf(configPath, __file__)
 
     logger = utils.initLog(**config['Logging'])
     logger.debug('Starting with config:\n' + str(config))
@@ -39,14 +37,14 @@ def main():
     utils.createFolders(config['Global']['tmppath'])
 
     try:
-        running = procutils.checkRunning(connstr, PROCNAME)
+        running = procutils.checkRunning(connstr, procname=config['Global']['procname'])
     except Exception as e:
         logger.critical('Couldn\'t obtain information from the database\n' + str(e))
         return 9
     if running and not config['Global'].get('forcerun'):
         logger.critical('The same program is running at this moment. Halting...')
         return 0
-    log_id = procutils.addLogEntry(connstr, PROCNAME)
+    log_id = procutils.addLogEntry(connstr, procname=config['Global']['procname'])
 
     try:
         if config['Miscellaneous']['uselocaldump']:

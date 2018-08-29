@@ -49,12 +49,19 @@ def print_help():
 
 
 # Importing configuration
-def initConf(configpath):
+def initConf(confpath, binpath):
     """
+    :param confpath - YAML configuration path
+    :param binpath - there must be __file__ passed
     Loades YAML config
     :return: Configuration tree
     """
-    return yaml.load(open(configpath))
+    config = yaml.load(open(confpath))
+    if config['Global'].get('procname') is None:
+        config['Global']['procname'] = binpath.split(os.path.sep)[-1].split('.')[0]
+
+    return config
+
 
 
 def createFolders(*args):
