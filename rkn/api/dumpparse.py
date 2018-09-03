@@ -79,12 +79,14 @@ def parse(xmldump, connstr):
         # walking through the available tags
         for tag in ('url', 'domain', 'ip', 'ipSubnet'):
             for element in content.iter(tag):
+
                 if tag == 'url':
                     if str(element.text).find('https') == 0:
                         entitytype = 'https'
                     else:
                         entitytype = 'http'
                     value = parseutils.urlHandler(element.text)
+
                 elif tag == 'domain':
                     # Why wouldn't be used content.attrib['blockType'] instead?
                     # Because domain tags don't depend on content blocktype.
@@ -99,6 +101,7 @@ def parse(xmldump, connstr):
                         entitytype = 'domain'
                         value = parseutils.punencodedom(
                             parseutils.domainCorrect(element.text))
+
                 elif tag == 'ip':
                     if not parseutils.isip(element.text):
                         continue
@@ -106,12 +109,28 @@ def parse(xmldump, connstr):
                         continue
                     entitytype = 'ip'
                     value = element.text
+
                 elif tag == 'ipSubnet':
                     if not parseutils.isipsub(element.text):
                         continue
                     if parseutils.isprivate(element.text):
                         continue
                     entitytype = 'ipsubnet'
+                    value = element.text
+
+                elif tag == 'ipv6':
+                    if not parseutils.isipv6(element.text):
+                        continue
+                    if parseutils.isprivate(element.text):
+                        continue
+                    entitytype = 'ipv6'
+                    value = element.text
+                elif tag == 'ipv6Subnet':
+                    if not parseutils.isipv6sub(element.text):
+                        continue
+                    if parseutils.isprivate(element.text):
+                        continue
+                    entitytype = 'ipv6subnet'
                     value = element.text
 
                 dataproc.addResource(content_id=content_id,

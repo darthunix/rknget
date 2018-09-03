@@ -61,7 +61,7 @@ def domainCorrect(s):
 # Robust, but 5 times slower
 def _isip(s):
     try:
-        ipaddress.ip_address(s)
+        ipaddress.IPv4Address(s)
         return True
     except ValueError:
         return False
@@ -70,7 +70,7 @@ def _isip(s):
 # Robust, but 5 times slower
 def _isipsub(s):
     try:
-        ipaddress.ip_network(s)
+        ipaddress.IPv4Network(s)
         return True
     except ValueError:
         return False
@@ -89,6 +89,22 @@ def isipsub(s):
         if int(sub) <= 32 and isip(ip):
             return True
     except:
+        return False
+
+
+def isipv6(s):
+    try:
+        ipaddress.IPv6Address(s)
+        return True
+    except ValueError:
+        return False
+
+
+def isipv6sub(s):
+    try:
+        ipaddress.IPv6Network(s)
+        return True
+    except ValueError:
         return False
 
 
