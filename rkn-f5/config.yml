@@ -21,6 +21,8 @@ Extra:
   https: True
   ip: True
   ipsubnet: False
+  ipv6: False
+  ipv6subnet: False
   domain: True
   domain-mask: True
   truncate-after: 200000

@@ -185,9 +185,23 @@ def main():
         if config['Extra']['ipsubnet']:
             urlsSet.update(
                 webconn.call(module='api.restrictions',
-                             method='getBlockedIPsFromSubnets',
+                             method='_getBlockedDataList',
+                             entityname='ipv6',
                              **config['API'])
             )
+        if config['Extra']['ipv6']:
+            # Wrapping into square brackets, see RFC2732
+            sq = lambda s: '[' + s + ']'
+            urlsSet.update(
+                map(sq,
+                    webconn.call(module='api.restrictions',
+                                 method='_getBlockedDataList',
+                                 entityname='ip',
+                                 **config['API'])
+                    )
+            )
+        if config['Extra']['ipv6subnet']:
+            logger.warning('Bad idea, won\'t do that')
         # Truncating entries if too many.
         if len(urlsSet) > config['Extra']['truncate-after']:
             logger.debug('Truncating entries: ' + str(len(urlsSet) - config['Extra']['truncate-after']))

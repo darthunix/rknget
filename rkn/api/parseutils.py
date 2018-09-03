@@ -59,19 +59,50 @@ def domainCorrect(s):
 
 
 # Robust, but 5 times slower
-def _isip(s):
+def checkIp(s):
+    """
+    :param s: IP
+    :return: true if the string is a public ip
+    """
     try:
         ipaddress.IPv4Address(s)
-        return True
+        return not ipaddress.ip_network(s).is_private
     except ValueError:
         return False
 
 
-# Robust, but 5 times slower
-def _isipsub(s):
+def checkIpsub(s):
+    """
+    :param s: IP
+    :return: true if the string is a public ip
+    """
     try:
         ipaddress.IPv4Network(s)
-        return True
+        return not ipaddress.ip_network(s).is_private
+    except ValueError:
+        return False
+
+
+def checkIpv6(s):
+    """
+    :param s: IP
+    :return: true if the string is a public ip
+    """
+    try:
+        ipaddress.IPv6Address(s)
+        return not ipaddress.ip_network(s).is_private
+    except ValueError:
+        return False
+
+
+def checkIpv6sub(s):
+    """
+    :param s: IP
+    :return: true if the string is a public ip
+    """
+    try:
+        ipaddress.IPv6Network(s)
+        return not ipaddress.ip_network(s).is_private
     except ValueError:
         return False
 
@@ -79,11 +110,12 @@ def _isipsub(s):
 __ipregex = re.compile('''\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}''')
 
 
-def isip(s):
+# 5x faster, but may be unreliable
+def _isip(s):
     return __ipregex.fullmatch(s) is not None
 
 
-def isipsub(s):
+def _isipsub(s):
     try:
         ip, sub = s.split('/')
         if int(sub) <= 32 and isip(ip):
@@ -92,34 +124,11 @@ def isipsub(s):
         return False
 
 
-def isipv6(s):
-    try:
-        ipaddress.IPv6Address(s)
-        return True
-    except ValueError:
-        return False
-
-
-def isipv6sub(s):
-    try:
-        ipaddress.IPv6Network(s)
-        return True
-    except ValueError:
-        return False
-
-
 __domregex = re.compile('''^.+\..*[^.]$''')
 
 
 def isdomain(s):
     return __domregex.fullmatch(s) is not None
-
-
-def isprivate(s):
-    try:
-        return ipaddress.ip_network(s).is_private
-    except ValueError:
-        return False
 
 
 def getSubnetIPs(s):

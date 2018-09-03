@@ -80,6 +80,8 @@ def parse(xmldump, connstr):
         for tag in ('url', 'domain', 'ip', 'ipSubnet'):
             for element in content.iter(tag):
 
+                entitytype = None
+
                 if tag == 'url':
                     if str(element.text).find('https') == 0:
                         entitytype = 'https'
@@ -103,40 +105,33 @@ def parse(xmldump, connstr):
                             parseutils.domainCorrect(element.text))
 
                 elif tag == 'ip':
-                    if not parseutils.isip(element.text):
-                        continue
-                    if parseutils.isprivate(element.text):
-                        continue
-                    entitytype = 'ip'
-                    value = element.text
+                    if parseutils.checkIp(element.text):
+                        entitytype = 'ip'
+                        value = element.text
 
                 elif tag == 'ipSubnet':
-                    if not parseutils.isipsub(element.text):
-                        continue
-                    if parseutils.isprivate(element.text):
-                        continue
-                    entitytype = 'ipsubnet'
-                    value = element.text
+                    if parseutils.checkIpsub(element.text):
+                        entitytype = 'ipsubnet'
+                        value = element.text
 
                 elif tag == 'ipv6':
-                    if not parseutils.isipv6(element.text):
-                        continue
-                    if parseutils.isprivate(element.text):
-                        continue
-                    entitytype = 'ipv6'
-                    value = element.text
-                elif tag == 'ipv6Subnet':
-                    if not parseutils.isipv6sub(element.text):
-                        continue
-                    if parseutils.isprivate(element.text):
-                        continue
-                    entitytype = 'ipv6subnet'
-                    value = element.text
+                    if parseutils.checkIpv6(element.text):
+                        entitytype = 'ipv6'
+                        value = element.text
 
-                dataproc.addResource(content_id=content_id,
-                                          last_change=element.attrib.get('ts'),
-                                          entitytype=entitytype,
-                                          value=value)
+                elif tag == 'ipv6Subnet':
+                    if parseutils.checkIpv6sub(element.text):
+                        entitytype = 'ipv6subnet'
+                        value = element.text
+
+                else:
+                    continue
+
+                if entitytype is not None:
+                    dataproc.addResource(content_id=content_id,
+                                         last_change=element.attrib.get('ts'),
+                                         entitytype=entitytype,
+                                         value=value)
 
     # There are content rows have been removed remain.
 

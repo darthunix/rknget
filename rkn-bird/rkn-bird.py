@@ -72,6 +72,7 @@ def main():
         ipsublist, totalblocked = webconn.call(module='api.restrictions',
                                                method='getBlockedIPs',
                                                collapse=config['Bird']['collapse'],
+                                               ipv6=config['Bird']['ipv6'],
                                                **config['API'])
         # Checking limit
         if len(ipsublist) > config['Bird']['limit']:
@@ -82,6 +83,7 @@ def main():
         # Updating BGP casts
         updateBirdConfig(ipsublist=ipsublist,
                          **config['Bird'])
+        # Saving the conf to another place
         if config['Global']['saveconf']:
             shutil.copy(config['Bird']['confpath'],
                         config['Global']['tmppath'])

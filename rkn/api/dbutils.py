@@ -7,8 +7,10 @@ Every function should return a string or many.
 """
 # Checks
 checks = {
-    'ip': parseutils._isip,
-    'ipsubnet': parseutils._isipsub,
+    'ip': parseutils.checkIp,
+    'ipsubnet': parseutils.checkIpsub,
+    'ipv6': parseutils.checkIpv6,
+    'ipv6subnet': parseutils.checkIpv6sub,
     'domain': parseutils.isdomain,
     'domain-mask': parseutils.isdomain
 }

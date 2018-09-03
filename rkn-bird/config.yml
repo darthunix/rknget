@@ -6,8 +6,9 @@ Global:
 Bird:
   restartcmd: /etc/init.d/bird reload
   confpath: ./bird-rkn.conf
-  collapse: False
+  collapse: True
   stubip: 1.1.1.1
+  ipv6: False
   limit: 100000
 
 API:
