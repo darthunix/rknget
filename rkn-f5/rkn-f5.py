@@ -144,7 +144,7 @@ def main():
         # Fetching http restrictions
         logger.info('Fetching restrictions list from DB')
         # Don't apply lstrip('http://') for this.
-        # Using particular case for http
+        # Using particular case for http le
         httpstrip = lambda x: x[7:] if x.find('http://') == 0 else x
         urlsSet = {httpstrip(url)
                    for url in webconn.call(module='api.restrictions',
