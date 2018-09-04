@@ -41,12 +41,13 @@ def getUnboundLocalDomains(binarypath, stubip, **kwargs):
     return domains, wdomains
 
 
-def addUnboundZones(binarypath, stubip, domainset, zonetype, **kwargs):
+def addUnboundZones(binarypath, domainset, zonetype, stubip=None, stubipv6=None, **kwargs):
     """
     Adds domains stubs via unbound-control
     :param binarypath: path to unbound-control
     :param domainset: domains set
     :param zonetype: 'static', 'redirect', 'transparent', etc. See unbound.conf manuals.
+    :param stubip, stubipv6 - stubs for zone records
     :return: blocked domains count
     """
     # One-by-one adding
@@ -61,11 +62,18 @@ def addUnboundZones(binarypath, stubip, domainset, zonetype, **kwargs):
                          stdout=devnull,
                          stdin=subprocess.PIPE)
     s.communicate(input=stdin.encode())
-    stdin = ('. IN A ' + stubip + '\n').join(domainset) + '. IN A ' + stubip + '\n'
-    s = subprocess.Popen([binarypath, 'local_datas'],
-                         stdout=devnull,
-                         stdin=subprocess.PIPE)
-    s.communicate(input=stdin.encode())
+    if stubip is not None:
+        stdin = ('. IN A ' + stubip + '\n').join(domainset) + '. IN A ' + stubip + '\n'
+        s = subprocess.Popen([binarypath, 'local_datas'],
+                             stdout=devnull,
+                             stdin=subprocess.PIPE)
+        s.communicate(input=stdin.encode())
+    if stubipv6 is not None:
+        stdin = ('. IN A ' + stubipv6 + '\n').join(domainset) + '. IN AAAA ' + stubipv6 + '\n'
+        s = subprocess.Popen([binarypath, 'local_datas'],
+                             stdout=devnull,
+                             stdin=subprocess.PIPE)
+        s.communicate(input=stdin.encode())
 
 
 def delUnboundZones(binarypath, domainset, **kwargs):
@@ -85,16 +93,22 @@ def delUnboundZones(binarypath, domainset, **kwargs):
     s.communicate(input=stdin.encode())
 
 
-def buildUnboundConfig(confpath, stubip, domainset, wdomainset, **kwargs):
+def buildUnboundConfig(confpath, domainset, wdomainset, stubip=None, stubipv6=None, **kwargs):
     configfile = open(file=confpath, mode='w')
 
     for domain in domainset:
         configfile.write('local-zone: "' + domain + '" transparent\n')
-        configfile.write('local-data: "' + domain + '. IN A 10.1.1.3"\n\n')
+        if stubip is not None:
+            configfile.write('local-data: "' + domain + '. IN A ' + stubip + '"\n\n')
+        if stubipv6 is not None:
+            configfile.write('local-data: "' + domain + '. IN AAAA ' + stubipv6 + '"\n\n')
 
     for wdomain in wdomainset:
         configfile.write('local-zone: "' + wdomain + '" redirect\n')
-        configfile.write('local-data: "' + wdomain + '. IN A 10.1.1.3"\n\n')
+        if stubip is not None:
+            configfile.write('local-data: "' + wdomain + '. IN A ' + stubip + '"\n\n')
+        if stubipv6 is not None:
+            configfile.write('local-data: "' + wdomain + '. IN AAAA ' + stubipv6 + '"\n\n')
 
     configfile.close()
 
@@ -128,6 +142,13 @@ def main():
                           method='addLogEntry',
                           procname=config['Global']['procname'],
                           **config['API'])
+
+    if config['Unbound'].get('stubip') is None \
+            and config['Unbound'].get('stubipv6') is None:
+        # Generally it's acceptable, but will work only for redirect records
+        # Transparent records without any info are be passed through.
+        logger.error('The stub is not set neither for A, nor AAAA records.')
+        logger.warning('Zones will be defined without info entries.')
 
     try:
         logger.info('Obtaining current domain blocklists on unbound daemon')
