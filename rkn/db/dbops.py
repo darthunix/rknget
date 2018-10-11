@@ -98,7 +98,7 @@ class DBOperator(DataProcessor):
             query = self._resourceQuery. \
                 filter(Resource.value.like('%' + value + '%'))
 
-        if entitytype_id is not None:
+        if entitytype is not None:
             entitytype_id = self._entitytypeDict.get(entitytype)
             if entitytype_id is not None:
                 query = query.filter(Resource.entitytype_id == entitytype_id)
