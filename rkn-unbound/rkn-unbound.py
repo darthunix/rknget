@@ -177,13 +177,6 @@ def main():
         logger.info('Banning...')
         result = ['Unbound updates:']
 
-
-
-        buildUnboundConfig(domainset=domainBlockSet,
-                           wdomainset=wdomainBlockSet,
-                           **config['Unbound']
-                           )
-
         domainset = domainBlockSet - domainUBCSet
         addUnboundZones(domainset=domainset,
                         zonetype='static',

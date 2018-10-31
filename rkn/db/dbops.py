@@ -88,7 +88,7 @@ class DBOperator(DataProcessor):
         """
         Searches resources in the table by value
         :param value: value to search in
-        :param fields: column names
+        :param args: column names
         :param entitytype: type of entity or any if not set
         :return: All entries matching the value. With headers.
         """

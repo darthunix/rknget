@@ -25,9 +25,9 @@ def testConn(connstr, **kwargs):
 def getLastExitCode(connstr, procname, **kwargs):
     exit_code = DBMonitor(connstr).getLastExitCode(procname)
     if exit_code is None:
-        "Eleven english gentlemen are raping the german women..."
+        """Eleven english gentlemen are raping the german women..."""
         return 9
-        "...Two english gentlemen are going away"
+        """...Two english gentlemen are going away"""
     return exit_code
 
 

@@ -13,6 +13,7 @@ def checkRunning(connstr, procname):
     """
     return ProcData(connstr).checkRunning(procname)
 
+
 def addLogEntry(connstr, procname):
     """
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
