@@ -9,20 +9,29 @@ sys.path.append('../')
 from common import webconn, utils
 
 
-def getUnboundLocalDomains(binarypath, stubip, **kwargs):
+def getUnboundLocalDomains(binarypath, stubip=None, stubipv6=None, **kwargs):
     """
     Gets domains set from unbound local zones data
     :param binarypath: path to unbound-control
-    :param stubip: ip used for stub
+    :param stubip, stubipv6 - stubs for zone records
     :return: domains set
     """
+    # Setting stupaddr to filter existing entries
+    if stubip is None:
+        if stubipv6 is not None:
+            stubaddr = stubipv6
+        else:
+            return {}, {}
+    else:
+        stubaddr = stubip
+
     proc = subprocess.Popen(args=[binarypath, 'list_local_data'],
                             stdout=subprocess.PIPE)
     # Filtered RKN domains
     domains = set()
     for stdoutrow in proc.communicate()[0].decode().split('\n'):
         rowdata = stdoutrow.split('\t')
-        if len(rowdata) == 5 and rowdata[4] == stubip:
+        if len(rowdata) == 5 and rowdata[4] == stubaddr:
             domains.add(rowdata[0][:-1])
     #
     proc = subprocess.Popen(args=[binarypath, 'list_local_zones'],
@@ -48,7 +57,7 @@ def addUnboundZones(binarypath, domainset, zonetype, stubip=None, stubipv6=None,
     :param domainset: domains set
     :param zonetype: 'static', 'redirect', 'transparent', etc. See unbound.conf manuals.
     :param stubip, stubipv6 - stubs for zone records
-    :return: blocked domains count
+    :return: None
     """
     # One-by-one adding
     # for domain in domainset:
@@ -62,14 +71,13 @@ def addUnboundZones(binarypath, domainset, zonetype, stubip=None, stubipv6=None,
                          stdout=devnull,
                          stdin=subprocess.PIPE)
     s.communicate(input=stdin.encode())
+
+    stdin = ''
     if stubip is not None:
         stdin = ('. IN A ' + stubip + '\n').join(domainset) + '. IN A ' + stubip + '\n'
-        s = subprocess.Popen([binarypath, 'local_datas'],
-                             stdout=devnull,
-                             stdin=subprocess.PIPE)
-        s.communicate(input=stdin.encode())
     if stubipv6 is not None:
-        stdin = ('. IN A ' + stubipv6 + '\n').join(domainset) + '. IN AAAA ' + stubipv6 + '\n'
+        stdin = stdin + ('. IN AAAA ' + stubipv6 + '\n').join(domainset) + '. IN AAAA ' + stubipv6 + '\n'
+    if len(stdin) > 0:
         s = subprocess.Popen([binarypath, 'local_datas'],
                              stdout=devnull,
                              stdin=subprocess.PIPE)
@@ -81,7 +89,7 @@ def delUnboundZones(binarypath, domainset, **kwargs):
     Deletes domains stubs via unbound-control
     :param binarypath: path to unbound-control
     :param domainset: domains set
-    :return: blocked domains count
+    :return: None
     """
     if len(domainset) == 0:
         return
@@ -168,6 +176,13 @@ def main():
 
         logger.info('Banning...')
         result = ['Unbound updates:']
+
+
+
+        buildUnboundConfig(domainset=domainBlockSet,
+                           wdomainset=wdomainBlockSet,
+                           **config['Unbound']
+                           )
 
         domainset = domainBlockSet - domainUBCSet
         addUnboundZones(domainset=domainset,
