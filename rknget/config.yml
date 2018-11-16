@@ -13,7 +13,7 @@ DumpLoader:
   conntimeout: 240
   sleeptimeout: 60
   SoapVersion: 1.2
-  dumpfmtver: 2.3
+  dumpfmtver: 2.4
 
 API:
   host: 10.1.253.90

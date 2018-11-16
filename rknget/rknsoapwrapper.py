@@ -10,9 +10,9 @@ class RknSOAPWrapper:
     _rknsoapclient = None
     _retryAttempts = 5
     _sleeptimeout = 60
-    _dumpFmtVersion = '2.3'
+    _dumpFmtVersion = '2.4'
 
-    def __init__(self, url, retryAttempts=5, sleeptimeout=60, dumpfmtver=2.3, **kwargs):
+    def __init__(self, url, retryAttempts=5, sleeptimeout=60, dumpfmtver=2.4, **kwargs):
         """
         Initiates WSDL service
         Throws exception if web service is unavailable
