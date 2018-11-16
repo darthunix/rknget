@@ -63,7 +63,6 @@ def initConf(confpath, binpath):
     return config
 
 
-
 def createFolders(*args):
     """
     Creates nesessary folders

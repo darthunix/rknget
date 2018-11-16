@@ -28,7 +28,7 @@ def main():
     if configPath is None:
         utils.print_help()
         return 0
-
+    connstr = 'postgresql://rkn:hry@10.1.253.90:5432/rkndb'
     config = utils.initConf(configPath, __file__)
 
     logger = utils.initLog(**config['Logging'])

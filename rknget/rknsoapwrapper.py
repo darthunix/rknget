@@ -12,7 +12,7 @@ class RknSOAPWrapper:
     _sleeptimeout = 60
     _dumpFmtVersion = '2.4'
 
-    def __init__(self, url, retryAttempts=5, sleeptimeout=60, dumpfmtver=2.4, **kwargs):
+    def __init__(self, url, retryAttempts=5, sleeptimeout=60, dumpfmtver='2.4', **kwargs):
         """
         Initiates WSDL service
         Throws exception if web service is unavailable
@@ -50,7 +50,7 @@ class RknSOAPWrapper:
         """Obtains RKN dump state info
         :return: dict {lastDumpDate: UTS (ms), lastDumpDateUrgently: UTS (ms)}
         """
-        return (self._wsdlCall('getLastDumpDateEx'))
+        return self._wsdlCall('getLastDumpDateEx')
 
     def getDumpFile(self, reqFileBase64, sigFileBase64):
         """Obtains RKN dump code

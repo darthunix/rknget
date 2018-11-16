@@ -77,7 +77,7 @@ def parse(xmldump, connstr):
 
         # resourses parsing...
         # walking through the available tags
-        for tag in ('url', 'domain', 'ip', 'ipSubnet'):
+        for tag in ('url', 'domain', 'ip', 'ipSubnet', 'ipv6', 'ipv6Subnet'):
             for element in content.iter(tag):
 
                 entitytype = None
