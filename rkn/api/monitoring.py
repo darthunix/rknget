@@ -45,13 +45,15 @@ def getBlockedIPCount(connstr):
 
 
 def getBlockedIPCountNew(connstr, ipv6=False):
-    ipsall = getBlockedIPList(connstr, collapse=True, ipv6)
+    ipsall = getBlockedIPList(connstr=connstr, collapse=True, ipv6=ipv6)
     ipNum = sum(map(lambda x: x.num_addresses, ipsall))
     return ipNum
 
 
 def getBlockedSubnetsCountNew(connstr, collapse=True, ipv6=False):
-    return len( getBlockedIPList(connstr, collapse, ipv6) )
+    return len(getBlockedIPList(connstr=connstr,
+                                collapse=collapse,
+                                ipv6=ipv6))
 
 
 def getDumpLag(connstr):
