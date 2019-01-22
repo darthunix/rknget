@@ -45,9 +45,9 @@ def getBlockedIPsFromSubnets(connstr):
     return [str(host) for ipsub in ipsubs for host in ipsub.hosts()]
 
 
-def getBlockedIPs(connstr, collapse=True, ipv6=False):
+def getBlockedIPList(connstr, collapse=True, ipv6=False):
     """
-    Merges IPs into IP subnets containing first ones.
+    Complementary function for getting only IP list
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge and minimize IPs and networks
     :param ipv6: use ipv6 entities
@@ -62,7 +62,19 @@ def getBlockedIPs(connstr, collapse=True, ipv6=False):
         ipsubs = [ipaddress.ip_network(addr) for addr in bldt.getBlockedResourcesSet('ipsubnet')]
     ipsall = ips + ipsubs
     if collapse:
-        ipsall = list(ipaddress.collapse_addresses(ipsall))
+        return list(ipaddress.collapse_addresses(ipsall))
+    return ipsall
+
+
+def getBlockedIPs(connstr, collapse=True, ipv6=False):
+    """
+    Merges IPs into IP subnets containing first ones.
+    :param connstr: smth like "engine://user:pswd@host:port/dbname"
+    :param collapse: merge and minimize IPs and networks
+    :param ipv6: use ipv6 entities
+    :return: The total and the list of ip subnets, using /32 for ips; IPs count
+    """
+    ipsall = getBlockedIPList(connstr, collapse, ipv6)
     ipNum = sum(map(lambda x: x.num_addresses, ipsall))
     return [list(map(str, ipsall)), ipNum]
 

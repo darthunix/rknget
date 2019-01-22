@@ -1,5 +1,6 @@
 from db.dbmon import DBMonitor
 from db.blockdata import BlockData
+import api.restrictions
 import ipaddress
 
 """
@@ -41,6 +42,16 @@ def getBlockedIPCount(connstr):
             )
     )
     return ipNum
+
+
+def getBlockedIPCountNew(connstr, ipv6=False):
+    ipsall = getBlockedIPList(connstr, collapse=True, ipv6)
+    ipNum = sum(map(lambda x: x.num_addresses, ipsall))
+    return ipNum
+
+
+def getBlockedSubnetsCountNew(connstr, collapse=True, ipv6=False):
+    return len( getBlockedIPList(connstr, collapse, ipv6) )
 
 
 def getDumpLag(connstr):
