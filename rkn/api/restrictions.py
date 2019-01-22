@@ -63,7 +63,7 @@ def getBlockedIPList(connstr, collapse=True, ipv6=False):
     ipsall = ips + ipsubs
     if collapse:
         return list(ipaddress.collapse_addresses(ipsall))
-    return ipsall
+    return list(ipsall)
 
 
 def getBlockedIPs(connstr, collapse=True, ipv6=False):

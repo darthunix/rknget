@@ -32,25 +32,13 @@ def getLastExitCode(connstr, procname, **kwargs):
     return exit_code
 
 
-def getBlockedIPCount(connstr):
-    bldt = BlockData(connstr)
-    ips = [ipaddress.ip_network(addr) for addr in bldt.getBlockedResourcesSet('ip')]
-    ipsubs = [ipaddress.ip_network(addr) for addr in bldt.getBlockedResourcesSet('ipsubnet')]
-    ipNum = sum(
-        map(lambda x: x.num_addresses,
-            ipaddress.collapse_addresses(ips + ipsubs)
-            )
-    )
-    return ipNum
-
-
-def getBlockedIPCountNew(connstr, ipv6=False, **kwargs):
+def getBlockedIPCount(connstr, ipv6=False):
     ipsall = getBlockedIPList(connstr=connstr, collapse=True, ipv6=ipv6)
-    ipNum = sum(map(lambda x: x.num_addresses, ipsall))
+    ipNum = sum(map(lambda x: x .num_addresses, ipsall))
     return ipNum
 
 
-def getBlockedSubnetsCountNew(connstr, collapse=True, ipv6=False, **kwargs):
+def getBlockedSubnetsCount(connstr, collapse=True, ipv6=False):
     return len(getBlockedIPList(connstr=connstr,
                                 collapse=collapse,
                                 ipv6=ipv6))
