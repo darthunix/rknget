@@ -11,9 +11,13 @@ def _getParamsDict():
     return {key: fields.getvalue(key) for key in fields.keys()}
 
 
-def printData(data):
+def printContent(data):
     print("Content-Type: text/plain\r\n\r\n")
-    print(str(data))
+    print(data)
+
+
+def formatContent(data):
+    return str(data)
 
 
 def main():
@@ -21,7 +25,7 @@ def main():
     fields = params.copy()
     modval = fields.pop('module', None)
     if modval.split('.')[0] != 'api':
-        print('Content-Type: text/plain\r\n\r\nNot an API')
+        printContent('Not an API')
         return 1
     metval = fields.pop('method', None)
 
@@ -35,7 +39,7 @@ def main():
                 rdbvaluekey = ''.join(sorted(map(str, list(params.keys()) + list(params.values()))))
                 data = rdb.get(rdbvaluekey)
                 if data:
-                    printData(data)
+                    printContent(data)
                     return 0
             except redis.TimeoutError:
                 rdb = None
@@ -45,18 +49,18 @@ def main():
     # Shoot your leg through!!!
     module = __import__(modval, fromlist=[metval])
     fields['connstr'] = dbconn.connstr
-    data = getattr(module, metval)(**fields)
+    data = formatContent(getattr(module, metval)(**fields))
 
     # Redis part
     if rdb:
         try:
-            rdb.set(rdbvaluekey, str(data), ex=dbconn.rdb.ex)
+            rdb.set(rdbvaluekey, data, ex=dbconn.rdb.ex)
         except redis.TimeoutError:
             pass
         except redis.exceptions.ConnectionError:
             pass
 
-    printData(data)
+    printContent(data)
     return 0
 
 
