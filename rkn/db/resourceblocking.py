@@ -31,7 +31,6 @@ class ResourceBlocker(DatabaseHandler):
         """
         self._entitytypeDict = self._getNameIDMapping(Entitytype)
 
-
     def unblockAllResources(self):
         self._session.query(Resource).update({'is_blocked': False}, synchronize_session=False)
 
@@ -72,7 +71,9 @@ class ResourceBlocker(DatabaseHandler):
                     and_(BlockType.name == 'domain', Entitytype.name == 'domain'),
                     and_(BlockType.name == 'domain-mask', Entitytype.name == 'domain-mask'),
                     and_(BlockType.name == 'ip',
-                         or_(Entitytype.name == 'ip', Entitytype.name == 'ipsubnet')),
+                         or_(
+                             Entitytype.name == 'ip', Entitytype.name == 'ipsubnet',
+                             Entitytype.name == 'ipv6', Entitytype.name == 'ipv6subnet'))
                 )
             ). \
             filter(Content.in_dump == True)
