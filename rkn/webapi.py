@@ -32,7 +32,7 @@ def main():
         if dbconn.rdb.conn:
             rdb = redis.Redis(**dbconn.rdb.conn)
             try:
-                rdbvaluekey = hash(''.join(map(str, list(params.keys()) + list(params.values()))))
+                rdbvaluekey = sum(map(hash, (map(str, list(params.keys()) + list(params.values())))))
                 data = rdb.get(rdbvaluekey)
                 if data:
                     printData(data)
