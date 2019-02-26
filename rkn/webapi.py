@@ -27,11 +27,13 @@ def main():
 
     # Redis part
     rdb = None
+    rdbvaluekey = None
     if modval in dbconn.rdb.cache:
         if dbconn.rdb.conn:
             rdb = redis.Redis(**dbconn.rdb.conn)
             try:
-                data = rdb.get(sum(map(hash, [params.items()])))
+                rdbvaluekey = hash(''.join(map(str, list(params.keys()) + list(params.values()))))
+                data = rdb.get(rdbvaluekey)
                 if data:
                     printData(data)
                     return 0
@@ -47,7 +49,7 @@ def main():
     # Redis part
     if rdb:
         try:
-            rdb.set(sum(map(hash, [params.items()])), str(data), ex=dbconn.rdb.ex)
+            rdb.set(rdbvaluekey, str(data), ex=dbconn.rdb.ex)
         except redis.TimeoutError:
             print('Redis timeout', file=sys.stderr)
 
