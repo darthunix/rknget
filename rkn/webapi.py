@@ -17,15 +17,13 @@ def printData(data):
 
 
 def main():
-    fields = _getParamsDict()
+    params = _getParamsDict()
+    fields = params.copy()
     modval = fields.pop('module', None)
     if modval.split('.')[0] != 'api':
         print('Content-Type: text/plain\r\n\r\nNot an API')
         return 1
     metval = fields.pop('method', None)
-
-    module = __import__(modval, fromlist=[metval])
-    fields['connstr'] = dbconn.connstr
 
     # Redis part
     rdb = None
@@ -33,7 +31,7 @@ def main():
         if dbconn.rdb.conn:
             rdb = redis.Redis(**dbconn.rdb.conn)
             try:
-                data = rdb.get(sum(map(hash, fields.items())))
+                data = rdb.get(sum(map(hash, params.items())))
                 if data:
                     printData(data)
                     return 0
@@ -42,12 +40,14 @@ def main():
                 rdb = None
 
     # Shoot your leg through!!!
+    module = __import__(modval, fromlist=[metval])
+    fields['connstr'] = dbconn.connstr
     data = getattr(module, metval)(**fields)
 
     # Redis part
     if rdb:
         try:
-            rdb.set(sum(map(hash, fields.items())), str(data), ex=dbconn.rdb.ex)
+            rdb.set(sum(map(hash, params.items())), str(data), ex=dbconn.rdb.ex)
         except redis.TimeoutError:
             print('Redis timeout', file=sys.stderr)
 
