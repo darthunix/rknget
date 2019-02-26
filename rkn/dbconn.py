@@ -30,4 +30,4 @@ class rdb:
         'password': 'bir6aepheo8eilohBo6NaarooTh6eeghooch3xaeCeecohnoo8gain9avu0phaiw'
     }
     cache = {'api.restrictions'}
-    ex = 600
+    ex = 900
