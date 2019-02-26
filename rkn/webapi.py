@@ -29,7 +29,7 @@ def main():
 
     # Redis part
     rdb = None
-    if metval in dbconn.rdb.cache:
+    if modval in dbconn.rdb.cache:
         if dbconn.rdb.conn:
             rdb = redis.Redis(**dbconn.rdb.conn)
             try:
