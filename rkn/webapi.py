@@ -37,8 +37,9 @@ def main():
                 if data:
                     printData(data)
                     return 0
-            except redis.TimeoutError or redis.exceptions.ConnectionError:
-                print('Redis timeout', file=sys.stderr)
+            except redis.TimeoutError:
+                rdb = None
+            except redis.exceptions.ConnectionError:
                 rdb = None
 
     # Shoot your leg through!!!
@@ -50,8 +51,10 @@ def main():
     if rdb:
         try:
             rdb.set(rdbvaluekey, str(data), ex=dbconn.rdb.ex)
-        except redis.TimeoutError or redis.exceptions.ConnectionError:
-            print('Redis timeout', file=sys.stderr)
+        except redis.TimeoutError:
+            pass
+        except redis.exceptions.ConnectionError:
+            pass
 
     printData(data)
     return 0
