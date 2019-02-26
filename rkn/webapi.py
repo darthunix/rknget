@@ -31,7 +31,7 @@ def main():
         if dbconn.rdb.conn:
             rdb = redis.Redis(**dbconn.rdb.conn)
             try:
-                data = rdb.get(sum(map(hash, params.items())))
+                data = rdb.get(sum(map(hash, [params.items()])))
                 if data:
                     printData(data)
                     return 0
@@ -47,7 +47,7 @@ def main():
     # Redis part
     if rdb:
         try:
-            rdb.set(sum(map(hash, params.items())), str(data), ex=dbconn.rdb.ex)
+            rdb.set(sum(map(hash, [params.items()])), str(data), ex=dbconn.rdb.ex)
         except redis.TimeoutError:
             print('Redis timeout', file=sys.stderr)
 
