@@ -12,8 +12,7 @@ def _getParamsDict():
 
 
 def printContent(data):
-    print("Content-Type: text/plain\r\n\r\n")
-    print(data)
+    print("Content-Type: text/plain\r\n\r\n" + data)
 
 
 def formatContent(data):
