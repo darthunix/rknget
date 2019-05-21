@@ -32,7 +32,7 @@ class RknSOAPWrapper:
         """
         i = 0
         while i < self._retryAttempts:
-            self._logger("WSDL Call attempt #" + str(i+1))
+            self._logger.debug("WSDL Call attempt #" + str(i+1))
             try:
                 sp = self._rknsoapclient.service[method]
                 if len(kwargs):
@@ -71,7 +71,7 @@ class RknSOAPWrapper:
 
         j = 0
         while j < self._retryAttempts:
-            self._logger("Dump obtaining attempt #" + str(j + 1))
+            self._logger.debug("Dump obtaining attempt #" + str(j + 1))
             resultAnswer = self._wsdlCall('getResult', code=dumpReqAnswer['code'])
             if not resultAnswer['result'] and resultAnswer['resultCode'] == 0:
                 time.sleep(self._sleeptimeout)
