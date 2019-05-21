@@ -110,3 +110,30 @@ def getBlockedDomains(connstr, collapse=True):
                 domains.discard(dom)
 
     return [list(domains), list(wdomains)]
+
+def getBlockedDomainsNew(connstr, collapse=True):
+    """
+    We don't need to block domains if the same wildcard domain is blocked
+    We don't need to block 3-level wildcard if 2-level wildcard is blocked
+    :param connstr: smth like "engine://user:pswd@host:port/dbname"
+    :param collapse: merge domains if wildcard analogue exists
+    :return: 2 sets: domains and wildcard domains
+    """
+    bldt = BlockData(connstr)
+    domains = bldt.getBlockedResourcesSet('domain')
+    wdomains = bldt.getBlockedResourcesSet('domain-mask')
+    if not collapse:
+        return [list(domains), list(wdomains)]
+    # Building domains tree
+
+    dtree = {"": None}
+    for d in domains:
+        dtree_ptr = dtree[""]
+        for i in d.split('.').__reversed__():
+            if dtree_ptr is None:
+                dtree_ptr = {i: None}
+            dtree_ptr = dtree_ptr[i]
+        dtree_ptr = {"": None}
+
+    # Fuck! Fuck the fucking python!
+

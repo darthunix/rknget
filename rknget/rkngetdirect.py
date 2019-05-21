@@ -75,6 +75,7 @@ def main():
                                          open(config['Global']['reqPathSig'], 'rb').read()
                                          )
             if config['Global']['savedump']:
+                logger.info('Saving file to ' + config['Global']['dumpPath'])
                 open(file=config['Global']['dumpPath'], mode='wb').write(dumpFile)
 
         # Parsing dump file

@@ -1,6 +1,6 @@
 import zeep.client
 import time
-
+import logging
 
 class RknSOAPWrapper:
     """
@@ -11,6 +11,7 @@ class RknSOAPWrapper:
     _retryAttempts = 5
     _sleeptimeout = 60
     _dumpFmtVersion = '2.4'
+    _logger = logging.getLogger()
 
     def __init__(self, url, retryAttempts=5, sleeptimeout=60, dumpfmtver='2.4', **kwargs):
         """
@@ -31,6 +32,7 @@ class RknSOAPWrapper:
         """
         i = 0
         while i < self._retryAttempts:
+            self._logger("WSDL Call attempt #" + str(i+1))
             try:
                 sp = self._rknsoapclient.service[method]
                 if len(kwargs):
@@ -40,8 +42,9 @@ class RknSOAPWrapper:
                 if response:
                     return response
             except Exception as e:
-                i += 1
                 time.sleep(self._sleeptimeout)
+            finally:
+                i += 1
 
         # if i >= self._retryAttempts:
         return None
@@ -66,14 +69,15 @@ class RknSOAPWrapper:
         if not dumpReqAnswer['result']:
             raise Exception('Couldn\'t send a request, reason: ' + dumpReqAnswer['resultComment'])
 
-        i = 0
-        while i < self._retryAttempts:
+        j = 0
+        while j < self._retryAttempts:
+            self._logger("Dump obtaining attempt #" + str(j + 1))
             resultAnswer = self._wsdlCall('getResult', code=dumpReqAnswer['code'])
             if not resultAnswer['result'] and resultAnswer['resultCode'] == 0:
-                i += 1
                 time.sleep(self._sleeptimeout)
             else:
                 break
+            j += 1
         if not resultAnswer['result']:
             raise Exception('Couldn\'t process a request, reason: ' + dumpReqAnswer['resultComment'])
 
