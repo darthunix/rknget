@@ -1,7 +1,7 @@
 from db.blockdata import BlockData
 import re
 import ipaddress
-from functools import reduce, lru_cache
+from functools import reduce
 
 """
 This module only operates with Resources data
@@ -129,19 +129,17 @@ def dnslistmerged(dnslist):
     return [list(domains), list(wdomains)]
 
 
-@lru_cache(maxsize=512)
 def mapdnstree(dnstree):
-     return [
+    return [
         [k,v] for k,v in dnstree.items()
         if type(v) != dict
             ] + \
-     reduce(lambda x,y: x+y,
-            map(lambda x: [[x[0]]+i for i in x[1]],
-                [[k,mapdnstree(v)] for k,v in dnstree.items()
-                 if type(v) == dict]
-                ),
-            []
-            )
+        reduce(lambda x,y: x+y,
+           map(lambda x: [[x[0]]+i for i in x[1]],
+               [[k,mapdnstree(v)] for k,v in dnstree.items()
+                if type(v) == dict]
+               ),
+           [])
 
 
 def mkdnstree(domains, wdomains):
@@ -177,5 +175,6 @@ def getBlockedDomainsNew(connstr, collapse=True):
     # Building domains tree
 
     dnstree = mkdnstree(domains,wdomains)
-    dnsmap = mapdnstree(dnstree)
+    # Starting with TLD, not 0LD
+    dnsmap = mapdnstree(dnstree[""])
     return dnslistmerged(dnsmap)
