@@ -1,6 +1,7 @@
 from db.blockdata import BlockData
 import re
 import ipaddress
+from functools import reduce, lru_cache
 
 """
 This module only operates with Resources data
@@ -111,6 +112,55 @@ def getBlockedDomains(connstr, collapse=True):
 
     return [list(domains), list(wdomains)]
 
+
+def mergednsmap(iswc, dnslst):
+    merger = lambda lst: ".".join(lst[:-2].__reversed__()) if lst[-1] == iswc else None
+    return set(map(merger,dnslst)) - {None}
+
+
+def dnslistmerged(dnslist):
+    domains = set()
+    wdomains = set()
+    for d in dnslist:
+        if d[-1]:
+            wdomains.add(".".join(d[:-2].__reversed__()))
+        else:
+            domains.add(".".join(d[:-2].__reversed__()))
+    return [list(domains), list(wdomains)]
+
+
+@lru_cache(maxsize=512)
+def mapdnstree(dnstree):
+     return [
+        [k,v] for k,v in dnstree.items()
+        if type(v) != dict
+            ] + \
+     reduce(lambda x,y: x+y,
+            map(lambda x: [[x[0]]+i for i in x[1]],
+                [[k,mapdnstree(v)] for k,v in dnstree.items()
+                 if type(v) == dict]
+                ),
+            []
+            )
+
+
+def mkdnstree(domains, wdomains):
+    dnstree = {"": {}}
+    for d in domains:
+        dnstree_ptr = dnstree.setdefault("")
+        for i in d.split('.').__reversed__():
+            dnstree_ptr = dnstree_ptr.setdefault(i, {})
+        dnstree_ptr[""] = False
+
+    for w in wdomains:
+        dnstree_ptr = dnstree.setdefault("")
+        for i in w.split('.').__reversed__():
+            dnstree_ptr = dnstree_ptr.setdefault(i, {})
+        dnstree_ptr.clear()
+        dnstree_ptr[""] = True
+    return dnstree
+
+
 def getBlockedDomainsNew(connstr, collapse=True):
     """
     We don't need to block domains if the same wildcard domain is blocked
@@ -126,14 +176,6 @@ def getBlockedDomainsNew(connstr, collapse=True):
         return [list(domains), list(wdomains)]
     # Building domains tree
 
-    dtree = {"": None}
-    for d in domains:
-        dtree_ptr = dtree[""]
-        for i in d.split('.').__reversed__():
-            if dtree_ptr is None:
-                dtree_ptr = {i: None}
-            dtree_ptr = dtree_ptr[i]
-        dtree_ptr = {"": None}
-
-    # Fuck! Fuck the fucking python!
-
+    dnstree = mkdnstree(domains,wdomains)
+    dnsmap = mapdnstree(dnstree)
+    return dnslistmerged(dnsmap)
