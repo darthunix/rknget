@@ -126,7 +126,7 @@ def dnslistmerged(dnslist):
             wdomains.add(".".join(d[:-2].__reversed__()))
         else:
             domains.add(".".join(d[:-2].__reversed__()))
-    return [list(domains), list(wdomains)]
+    return domains, wdomains
 
 
 def mapdnstree(dnstree):
@@ -177,4 +177,4 @@ def getBlockedDomainsNew(connstr, collapse=True):
     dnstree = mkdnstree(domains,wdomains)
     # Starting with TLD, not 0LD
     dnsmap = mapdnstree(dnstree[""])
-    return dnslistmerged(dnsmap)
+    return list( map(list,dnslistmerged(dnsmap)) )
