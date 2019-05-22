@@ -80,8 +80,9 @@ def getBlockedIPs(connstr, collapse=True, ipv6=False):
     return [list(map(str, ipsall)), ipNum]
 
 
-def getBlockedDomains(connstr, collapse=True):
+def getBlockedDomainsOld(connstr, collapse=True):
     """
+    Keeped there for comparison, or how to speed up python in 100 times
     We don't need to block domains if the same wildcard domain is blocked
     We don't need to block 3-level wildcard if 2-level wildcard is blocked
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
@@ -114,11 +115,22 @@ def getBlockedDomains(connstr, collapse=True):
 
 
 def mergednsmap(iswc, dnslst):
+    """
+    Not used to avoid 2 function calls, and array walking twice
+    :param iswc: Is wildcards needed, True/False
+    :param dnslst: the list of domains-as-suffix-list
+    :return: the set of domains
+    """
     merger = lambda lst: ".".join(lst[:-2].__reversed__()) if lst[-1] == iswc else None
     return set(map(merger,dnslst)) - {None}
 
 
 def dnslistmerged(dnslist):
+    """
+    Makes textual domain from suffixes list for each in he given list
+    :param dnslist: the list of domains-as-suffix-list
+    :return: two sets, domains and wdomains
+    """
     domains = set()
     wdomains = set()
     for d in dnslist:
@@ -130,6 +142,14 @@ def dnslistmerged(dnslist):
 
 
 def mapdnstree(dnstree):
+    """
+    Restores each domain in the given DNSD tree as a list of suffixes.
+    Each entry of the returned list is finished with "" as a terminator
+    and boolean indicator of wildcardness:
+    [['com','domain','sub','',False], ...]
+    :param dnstree: DNS tree
+    :return: domain entries as suffixes list
+    """
     return [
         [k,v] for k,v in dnstree.items()
         if type(v) != dict
@@ -143,6 +163,15 @@ def mapdnstree(dnstree):
 
 
 def mkdnstree(domains, wdomains):
+    """
+    Makes DNS tree starting from 0LD as empty string.
+    Each leaf ends up with auxiliary {'': bool} attribute
+    to differ an entry from its subdomain and to distinguish
+	wildcard domains which excludes entire subtree itself.
+    :param domains: domains iterable
+    :param wdomains: wdomains iterable
+    :return:
+    """
     dnstree = {"": {}}
     for d in domains:
         dnstree_ptr = dnstree.setdefault("")
@@ -159,10 +188,9 @@ def mkdnstree(domains, wdomains):
     return dnstree
 
 
-def getBlockedDomainsNew(connstr, collapse=True):
+def getBlockedDomains(connstr, collapse=True):
     """
-    We don't need to block domains if the same wildcard domain is blocked
-    We don't need to block 3-level wildcard if 2-level wildcard is blocked
+    Brand new procedure. Uses domain tree to cleanup excess domains.
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge domains if wildcard analogue exists
     :return: 2 sets: domains and wildcard domains
@@ -173,8 +201,9 @@ def getBlockedDomainsNew(connstr, collapse=True):
     if not collapse:
         return [list(domains), list(wdomains)]
     # Building domains tree
-
     dnstree = mkdnstree(domains,wdomains)
+    # Coalescing the tree to a list of domain-as-lists
     # Starting with TLD, not 0LD
     dnsmap = mapdnstree(dnstree[""])
+    # Making text domains and wdomains again
     return list( map(list,dnslistmerged(dnsmap)) )
