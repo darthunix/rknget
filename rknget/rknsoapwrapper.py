@@ -1,4 +1,5 @@
 import zeep.client
+import zeep.transports
 import time
 import logging
 
@@ -13,13 +14,14 @@ class RknSOAPWrapper:
     _dumpFmtVersion = '2.4'
     _logger = logging.getLogger()
 
-    def __init__(self, url, retryAttempts=5, sleeptimeout=60, dumpfmtver='2.4', **kwargs):
+    def __init__(self, url, retryAttempts=5, sleeptimeout=60, conntimeout=60, dumpfmtver='2.4', **kwargs):
         """
         Initiates WSDL service
         Throws exception if web service is unavailable
         """
-
-        self._rknsoapclient = zeep.client.Client(wsdl=url)
+        transport = zeep.transports.Transport(timeout=conntimeout)
+        self._rknsoapclient = zeep.client.Client(wsdl=url,
+                                                 transport=transport)
         self._rknsoapclient.options(raw_response=True)
 
         self._retryAttempts = retryAttempts
