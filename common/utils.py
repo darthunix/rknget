@@ -37,7 +37,7 @@ def confpath_argv():
     """
     if len(sys.argv) == 1:
         return CONFIG_PATH
-    if len(sys.argv) == 3 and sys.argv[2] == '-c':
+    if len(sys.argv) == 3 and sys.argv[1] == '-c':
         return sys.argv[3]
     return None
 
