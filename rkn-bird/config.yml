@@ -4,7 +4,7 @@ Global:
   saveconf: True
 
 Bird:
-  restartcmd: birdc reload out all
+  restartcmd: systemctl reload bird
   confpath: ./bird-rkn.conf
   collapse: True
   stubip: 1.1.1.1
