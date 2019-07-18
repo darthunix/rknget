@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from webmain import WebApi
+from webmain import WebMainApi
 
 
-class WebRawApi(WebApi):
+class WebPlainApi(WebMainApi):
 
     _DELIMETER="\n"
     _HASHSIGN=":"
@@ -24,5 +24,5 @@ class WebRawApi(WebApi):
 
 
 if __name__ == "__main__":
-    result = WebRawApi().main()
+    result = WebPlainApi().main()
     exit(code=result)

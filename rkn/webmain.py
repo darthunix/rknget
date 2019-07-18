@@ -6,7 +6,7 @@ import dbconn
 import redis
 
 
-class WebApi:
+class WebMainApi:
     """
     The class for printing CGI data, but hasn't had its procedures implemented.
     """

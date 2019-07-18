@@ -1,20 +1,8 @@
 #!/usr/bin/env python3
-from webmain import WebApi
+from webmain import WebMainApi
 
 
-class WebRawApi(WebApi):
-
-    _DELIMETER="\n"
-    _HASHSIGN=":"
-
-    def _serialize(self, obj):
-        if type(obj) == dict:
-            return self._serialize(
-                [self._serialize(k)+self._HASHSIGN+self._serialize(v) for k,v in obj.items()])
-        elif type(obj) in {list,tuple,set}:
-            return self._DELIMETER.join(map(self._serialize,obj))
-        else:
-            return str(obj)
+class WebRawApi(WebMainApi):
 
     def _printContent(self, data):
         print("Content-Type: text/plain\r\n\r\n" + data)
