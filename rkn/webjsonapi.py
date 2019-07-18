@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import sys
 
 
 #!/usr/bin/env python3
@@ -7,6 +8,9 @@ from webmain import WebMainApi
 
 
 class WebJSONApi(WebMainApi):
+
+    def _getParamsDict(self):
+        return json.loads(sys.stdin.read())
 
     def _printContent(self, data):
         print("Content-type:application/json\r\n\r\n")
