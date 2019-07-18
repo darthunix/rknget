@@ -1,32 +1,30 @@
 #!/usr/bin/env python3
-from webmain import main as main
+from webmain import WebApi
 
 
-def _getParamsDict():
-    fields = cgi.FieldStorage()
-    return {key: fields.getvalue(key) for key in fields.keys()}
+class WebRawApi(WebApi):
+
+    self._DELIMETER="\n"
+    self._HASHSIGN=":"
+
+    def serialize(obj):
+        if type(obj) == dict:
+            return self._serialize(
+                [self._serialize(k)+self._HASHSIGN+self._serialize(v) for k,v in obj.items()])
+        elif type(obj) in {list,tuple,set}:
+            return self._DELIMETER.join(map(self._serialize,obj))
+        else:
+            return str(obj)
 
 
-DELIMETER="\n"
-HASHSIGN=":"
-def serialize(obj):
-    if type(obj) == dict:
-        return serialize(
-            [serialize(k)+HASHSIGN+serialize(v) for k,v in obj.items()])
-    elif type(obj) in {list,tuple,set}:
-        return DELIMETER.join(map(serialize,obj))
-    else:
-        return str(obj)
+    def _printContent(data):
+        print("Content-Type: text/plain\r\n\r\n" + data)
 
 
-def printContent(data):
-    print("Content-Type: text/plain\r\n\r\n" + data)
-
-
-def formatContent(data):
-    return serialize(data)
+    def _formatContent(data):
+        return self._serialize(data)
 
 
 if __name__ == "__main__":
-    result = main()
+    result = WebRawApi()
     exit(code=result)
