@@ -7,7 +7,7 @@ class WebRawApi(WebApi):
     _DELIMETER="\n"
     _HASHSIGN=":"
 
-    def serialize(obj):
+    def serialize(self, obj):
         if type(obj) == dict:
             return self._serialize(
                 [self._serialize(k)+self._HASHSIGN+self._serialize(v) for k,v in obj.items()])
@@ -17,11 +17,11 @@ class WebRawApi(WebApi):
             return str(obj)
 
 
-    def _printContent(data):
+    def _printContent(self, data):
         print("Content-Type: text/plain\r\n\r\n" + data)
 
 
-    def _formatContent(data):
+    def _formatContent(self, data):
         return self._serialize(data)
 
 
