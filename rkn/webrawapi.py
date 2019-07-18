@@ -26,5 +26,5 @@ class WebRawApi(WebApi):
 
 
 if __name__ == "__main__":
-    result = WebRawApi.main()
+    result = WebRawApi().main()
     exit(code=result)
