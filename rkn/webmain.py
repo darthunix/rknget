@@ -7,6 +7,9 @@ import redis
 
 
 class WebApi:
+    """
+    The class for printing CGI data, but hasn't had its procedures implemented.
+    """
 
     def _getParamsDict(self):
         fields = cgi.FieldStorage()

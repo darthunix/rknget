@@ -16,13 +16,11 @@ class WebRawApi(WebApi):
         else:
             return str(obj)
 
-
     def _printContent(self, data):
         print("Content-Type: text/plain\r\n\r\n" + data)
 
-
     def _formatContent(self, data):
-        return self._serialize(data)
+        return str(data)
 
 
 if __name__ == "__main__":
