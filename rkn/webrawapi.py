@@ -4,8 +4,8 @@ from webmain import WebApi
 
 class WebRawApi(WebApi):
 
-    self._DELIMETER="\n"
-    self._HASHSIGN=":"
+    _DELIMETER="\n"
+    _HASHSIGN=":"
 
     def serialize(obj):
         if type(obj) == dict:
