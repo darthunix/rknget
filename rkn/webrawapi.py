@@ -7,7 +7,7 @@ class WebRawApi(WebApi):
     _DELIMETER="\n"
     _HASHSIGN=":"
 
-    def serialize(self, obj):
+    def _serialize(self, obj):
         if type(obj) == dict:
             return self._serialize(
                 [self._serialize(k)+self._HASHSIGN+self._serialize(v) for k,v in obj.items()])
