@@ -13,7 +13,7 @@ class WebJSONApi(WebMainApi):
         return json.loads(sys.stdin.read())
 
     def _printContent(self, data):
-        print("Content-type:application/json\r\n\r\n")
+        print("Content-type:application/json\r\n\r\n" + data)
 
     def _formatContent(self, data):
         return json.dumps(data, default=str)
