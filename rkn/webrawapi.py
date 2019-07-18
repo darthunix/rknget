@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import webmain import main as main
+from webmain import main as main
 
 
 def _getParamsDict():
