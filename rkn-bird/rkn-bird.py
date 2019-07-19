@@ -69,11 +69,11 @@ def main():
     try:
         # Fetching ip restrictions
         logger.info('Fetching restrictions list from DB')
-        ipsublist, totalblocked = webconn.call(module='api.restrictions',
-                                               method='getBlockedIPs',
-                                               collapse=config['Bird']['collapse'],
-                                               ipv6=config['Bird']['ipv6'],
-                                               **config['API'])
+        ipsublist = webconn.call(module='api.restrictions',
+                                 method='getBlockedIPs',
+                                 collapse=config['Bird']['collapse'],
+                                 ipv6=config['Bird']['ipv6'],
+                                 **config['API'])
         # Checking limit
         if len(ipsublist) > config['Bird']['limit']:
             logger.warning('Limit exceeded: ' + str(len(ipsublist)) + ' routes')
@@ -89,8 +89,7 @@ def main():
                         config['Global']['tmppath'])
 
         # Updating the state in the database
-        result = [str(totalblocked) + ' ip entries are routed to blackhole',
-                  str(len(ipsublist)) + ' entries are announced by BGP daemon']
+        result = [str(len(ipsublist)) + ' entries are announced by BGP daemon']
         logger.info(', '.join(result))
         # Updating the state in the database
         webconn.call(module='api.procutils',

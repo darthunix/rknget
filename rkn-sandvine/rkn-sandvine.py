@@ -89,11 +89,11 @@ def exportDomains(path_domain, path_wdomain, collapse=True,
 
 
 def exportIPs(path, collapse=True, subnet_fmt=False, ipv6=False, **apiconf):
-    dataset, totalblocked = webconn.call(module='api.restrictions',
-                                         method='getBlockedIPs',
-                                         collapse=collapse,
-                                         ipv6=ipv6,
-                                         **apiconf)
+    dataset = webconn.call(module='api.restrictions',
+                           method='getBlockedIPs',
+                           collapse=collapse,
+                           ipv6=ipv6,
+                           **apiconf)
     if not subnet_fmt:
         if ipv6:
             # Truncating /128

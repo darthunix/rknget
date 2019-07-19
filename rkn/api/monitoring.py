@@ -34,7 +34,7 @@ def getLastExitCode(connstr, procname, **kwargs):
 
 def getBlockedIPCount(connstr, ipv6=False):
     ipsall = getBlockedIPList(connstr=connstr, collapse=True, ipv6=ipv6)
-    ipNum = sum(map(lambda x: x .num_addresses, ipsall))
+    ipNum = sum(map(lambda x: x.num_addresses, ipsall))
     return ipNum
 
 

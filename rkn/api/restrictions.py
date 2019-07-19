@@ -73,11 +73,10 @@ def getBlockedIPs(connstr, collapse=True, ipv6=False):
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge and minimize IPs and networks
     :param ipv6: use ipv6 entities
-    :return: The total and the list of ip subnets, using /32 for ips; IPs count
+    :return: The total and the list of ip subnets, using /32 for ips
     """
     ipsall = getBlockedIPList(connstr, collapse, ipv6)
-    ipNum = sum(map(lambda x: x.num_addresses, ipsall))
-    return [list(map(str, ipsall)), ipNum]
+    return list(map(str, ipsall))
 
 
 def getBlockedDomainsOld(connstr, collapse=True):
