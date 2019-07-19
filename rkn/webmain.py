@@ -53,7 +53,7 @@ class WebMainApi:
         data = self._formatContent(getattr(module, metval)(**fields))
 
         # Redis part
-        if   :
+        if rdb:
             try:
                 rdb.set(rdbvaluekey, data, ex=dbconn.rdb.ex)
             except redis.TimeoutError:
