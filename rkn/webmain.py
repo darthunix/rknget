@@ -27,7 +27,6 @@ class WebMainApi:
             self._printContent('Not an API')
             return 1
         metval = fields.pop('method', None)
-
         # Redis part
         rdb = None
         rdbvaluekey = None
