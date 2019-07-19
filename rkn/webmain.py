@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import cgi
 import sys
 
 import dbconn
@@ -12,8 +11,7 @@ class WebMainApi:
     """
 
     def _getParamsDict(self):
-        fields = cgi.FieldStorage()
-        return {key: fields.getvalue(key) for key in fields.keys()}
+        pass
 
     def _printContent(self, data):
         pass
@@ -37,7 +35,9 @@ class WebMainApi:
             if dbconn.rdb.conn:
                 rdb = redis.Redis(**dbconn.rdb.conn)
                 try:
-                    rdbvaluekey = ''.join(sorted(map(str, list(params.keys()) + list(params.values()))))
+                    # To distinguish different API's results
+                    # Got already formatted result, not source or pickled
+                    rdbvaluekey = __file__ + ''.join(sorted(map(str, list(params.keys()) + list(params.values()))))
                     data = rdb.get(rdbvaluekey)
                     if data:
                         self._printContent(data)
@@ -53,7 +53,7 @@ class WebMainApi:
         data = self._formatContent(getattr(module, metval)(**fields))
 
         # Redis part
-        if rdb:
+        if   :
             try:
                 rdb.set(rdbvaluekey, data, ex=dbconn.rdb.ex)
             except redis.TimeoutError:
