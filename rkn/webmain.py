@@ -37,7 +37,7 @@ class WebMainApi:
                 try:
                     # To distinguish different API's results
                     # Got already formatted result, not source or pickled
-                    rdbvaluekey = __file__ + ''.join(sorted(map(str, list(params.keys()) + list(params.values()))))
+                    rdbvaluekey = __name__ + ''.join(sorted(map(str, list(params.keys()) + list(params.values()))))
                     data = rdb.get(rdbvaluekey)
                     if data:
                         self._printContent(data)
