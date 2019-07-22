@@ -90,17 +90,23 @@ def mergednsmap(iswc, dnslst):
     return set(map(merger,dnslst)) - {None}
 
 
-def dnslistmerged(dnslist):
+def dnslistmerged(dnslist, wc_asterize=False):
     """
     Makes textual domain from suffixes list for each in he given list
     :param dnslist: the list of domains-as-suffix-list
+    :param wc_asterize: appending *. to each wildcard domain
     :return: two sets, domains and wdomains
     """
     domains = set()
     wdomains = set()
+    # Setting wildcard asterisk prefix if required
+    wc_sign = ''
+    if wc_asterize:
+        wc_sign = '*.'
+
     for d in dnslist:
         if d[-1]:
-            wdomains.add(".".join(d[:-2].__reversed__()))
+            wdomains.add(wc_sign + ".".join(d[:-2].__reversed__()))
         else:
             domains.add(".".join(d[:-2].__reversed__()))
     return domains, wdomains
@@ -132,7 +138,7 @@ def mkdnstree(domains, wdomains):
     Makes DNS tree starting from 0LD as empty string.
     Each leaf ends up with auxiliary {'': bool} attribute
     to differ an entry from its subdomain and to distinguish
-	wildcard domains which excludes entire subtree itself.
+    wildcard domains which excludes entire subtree itself.
     :param domains: domains iterable
     :param wdomains: wdomains iterable
     :return:
@@ -153,19 +159,22 @@ def mkdnstree(domains, wdomains):
     return dnstree
 
 
-def getBlockedDomains(connstr, collapse=True):
+def getBlockedDomains(connstr, collapse=True, wc_asterize=False):
     """
     Brand new procedure. Uses domain tree to cleanup excess domains.
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge domains if wildcard analogue exists
-    :param collapse: merge domains if wildcard analogue exists
+    :param wc_asterize=False: merge domains if wildcard analogue exists
     :return: 2 sets: domains and wildcard domains
     """
     bldt = BlockData(connstr)
     domains = bldt.getBlockedResourcesSet('domain')
     wdomains = bldt.getBlockedResourcesSet('domain-mask')
     if not collapse:
-        return [list(domains), list(wdomains)]
+        if wc_asterize:
+            wdomains = map(lambda s: '*.'+s, wdomains)
+        return [list(domains),
+                list(wdomains)]
     # Building domains tree
     dnstree = mkdnstree(domains,wdomains)
     # Coalescing the tree to a list of domain-as-lists

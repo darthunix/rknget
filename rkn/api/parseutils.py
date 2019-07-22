@@ -51,7 +51,7 @@ def domainCorrect(s):
     :param s: str
     :return: corrected domains
     """
-    badchars = ('\\', '\'', '"')
+    badchars = ('\\', '\'', '"', '_')
     for c in badchars:
         if s.find(c) != -1:
             s = ''.join(s.split(c))
