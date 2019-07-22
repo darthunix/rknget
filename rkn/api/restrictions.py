@@ -181,4 +181,4 @@ def getBlockedDomains(connstr, collapse=True, wc_asterize=False):
     # Starting with TLD, not 0LD
     dnsmap = mapdnstree(dnstree[""])
     # Making text domains and wdomains again
-    return list( map(list,dnslistmerged(dnsmap)) )
+    return list( map(list,dnslistmerged(dnsmap, wc_asterize)) )
