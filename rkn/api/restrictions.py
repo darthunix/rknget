@@ -164,7 +164,7 @@ def getBlockedDomains(connstr, collapse=True, wc_asterize=False):
     Brand new procedure. Uses domain tree to cleanup excess domains.
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge domains if wildcard analogue exists
-    :param wc_asterize=False: merge domains if wildcard analogue exists
+    :param wc_asterize: merge domains if wildcard analogue exists
     :return: 2 sets: domains and wildcard domains
     """
     bldt = BlockData(connstr)
