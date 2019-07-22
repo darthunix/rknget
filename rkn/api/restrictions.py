@@ -79,40 +79,6 @@ def getBlockedIPs(connstr, collapse=True, ipv6=False):
     return list(map(str, ipsall))
 
 
-def getBlockedDomainsOld(connstr, collapse=True):
-    """
-    Keeped there for comparison, or how to speed up python in 100 times
-    We don't need to block domains if the same wildcard domain is blocked
-    We don't need to block 3-level wildcard if 2-level wildcard is blocked
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
-    :param collapse: merge domains if wildcard analogue exists
-    :return: 2 sets: domains and wildcard domains
-    """
-    bldt = BlockData(connstr)
-    domains = bldt.getBlockedResourcesSet('domain')
-    wdomains = bldt.getBlockedResourcesSet('domain-mask')
-    if not collapse:
-        return [list(domains), list(wdomains)]
-    # Dedupe wdomains
-    wds = wdomains.copy()
-    for wd in wds:
-        regex = re.compile('''^.+\.''' + wd + '''$''')
-        for wdom in wds:
-            if regex.fullmatch(wdom):
-                # Using discard to ignore redelete.
-                wdomains.discard(wdom)
-
-    # Dedupe domains with wdomains
-    for wd in wdomains.copy():
-        regex = re.compile('''^(.*[^.]\.)?''' + wd + '''$''')
-        for dom in domains.copy():
-            if regex.fullmatch(dom):
-                # Using discard to ignore redelete.
-                domains.discard(dom)
-
-    return [list(domains), list(wdomains)]
-
-
 def mergednsmap(iswc, dnslst):
     """
     Not used to avoid 2 function calls, and array walking twice
