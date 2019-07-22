@@ -182,3 +182,35 @@ def getBlockedDomains(connstr, collapse=True, wc_asterize=False):
     dnsmap = mapdnstree(dnstree[""])
     # Making text domains and wdomains again
     return list( map(list,dnslistmerged(dnsmap, wc_asterize)) )
+
+
+def getBlockedDNS(connstr, collapse=True):
+    """
+    Returns domains list only.
+    :param connstr: smth like "engine://user:pswd@host:port/dbname"
+    :param collapse: merge domains if wildcard analogue exists.
+    Calls getBlockedDomains, no way else.
+    :return: domains set
+    """
+    if not collapse:
+        return list(BlockData(connstr).getBlockedResourcesSet('domain'))
+    # Else
+    return getBlockedDomains(connstr, collapse=True)[0]
+
+
+def getBlockedWildcardDNS(connstr, collapse=True, wc_asterize=False):
+    """
+    Returns wildcard domains list only.
+    :param connstr: smth like "engine://user:pswd@host:port/dbname"
+    :param collapse: merge domains if wildcard analogue exists.
+    Calls getBlockedDomains, no way else.
+    :return: wildcard domains set
+    """
+    if not collapse:
+        wdomains = BlockData(connstr).getBlockedResourcesSet('domain-mask')
+        if wc_asterize:
+            wdomains = map(lambda s: '*.'+s, wdomains)
+        return list(wdomains)
+    # Else
+    return getBlockedDomains(connstr, collapse=True, wc_asterize=wc_asterize)[1]
+
