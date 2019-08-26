@@ -34,3 +34,40 @@ class BlockData(DatabaseHandler):
         resSet = {resrow.value for resrow in query.all()}
 
         return resSet
+
+
+    def _getFairlyBlockedResourcesQuery(self, entityname):
+        """
+        :param entitytype: resource entitytype
+        :return: query
+        """
+        # Distinct is not needed for set()
+        # distinct(Resource.value). \
+
+        fairness = {
+            'http': 'default', 'https': 'default',
+            'domain': 'domain',
+            'domain-mask': 'domain-mask',
+            'ip': 'ip', 'ipsubnet': 'ip', 'ipv6': 'ip', 'ipv6subnet': 'ip'
+        }
+
+        return self._session.query(Resource.value). \
+            join(Entitytype, Resource.entitytype_id == Entitytype.id). \
+            join(Content, Resource.content_id == Content.id). \
+            join(Blocktype, Content.blocktype_id == Blocktype.id). \
+            filter(Entitytype.name == entityname). \
+            filter(Resource.is_blocked == True). \
+            filter(Blocktype.name == fairness[entityname])
+
+    def getFairlyBlockedResourcesSet(self, entityname):
+        """
+        :param entitytype: resource entitytype
+        :return: resources' values set
+        """
+        query = self._getFairlyBlockedResourcesQuery(entityname)
+
+        resSet = {resrow.value for resrow in query.all()}
+
+        return resSet
+
+
