@@ -54,10 +54,10 @@ class BlockData(DatabaseHandler):
         return self._session.query(Resource.value). \
             join(Entitytype, Resource.entitytype_id == Entitytype.id). \
             join(Content, Resource.content_id == Content.id). \
-            join(Blocktype, Content.blocktype_id == Blocktype.id). \
+            join(BlockType, Content.blocktype_id == BlockType.id). \
             filter(Entitytype.name == entityname). \
             filter(Resource.is_blocked == True). \
-            filter(Blocktype.name == fairness[entityname])
+            filter(BlockType.name == fairness[entityname])
 
     def getFairlyBlockedResourcesSet(self, entityname):
         """
