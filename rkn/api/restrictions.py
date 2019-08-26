@@ -48,11 +48,11 @@ def getBlockedIPsFromSubnets(connstr):
 
 def getBlockedIPList(connstr, collapse=True, ipv6=False):
     """
-    Complementary function for getting only IP list
+    Function for getting only IP blockings as IPAddress objects.
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge and minimize IPs and networks
     :param ipv6: use ipv6 entities
-    :return: The total and the list of ip subnets, using /32 for ips.
+    :return: The list of ip subnets, using /32 for ips.
     """
     bldt = BlockData(connstr)
     if ipv6:
@@ -69,7 +69,7 @@ def getBlockedIPList(connstr, collapse=True, ipv6=False):
 
 def getBlockedIPs(connstr, collapse=True, ipv6=False):
     """
-    Merges IPs into IP subnets containing first ones.
+    Converts objects to text.
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge and minimize IPs and networks
     :param ipv6: use ipv6 entities
@@ -214,3 +214,23 @@ def getBlockedWildcardDNS(connstr, collapse=True, wc_asterize=False):
     # Else
     return getBlockedDomains(connstr, collapse=True, wc_asterize=wc_asterize)[1]
 
+
+def getFairlyBlockedIPs(connstr, collapse=True, ipv6=False):
+    """
+    Function for getting only IP blockings as IPAddress objects.
+    :param connstr: smth like "engine://user:pswd@host:port/dbname"
+    :param collapse: merge and minimize IPs and networks
+    :param ipv6: use ipv6 entities
+    :return: The list of ip subnets, using /32 for ips.
+    """
+    bldt = BlockData(connstr)
+    if ipv6:
+        ips = [ipaddress.ip_network(addr) for addr in bldt.getFairlyBlockedResourcesSet('ipv6')]
+        ipsubs = [ipaddress.ip_network(addr) for addr in bldt.getFairlyBlockedResourcesSet('ipv6subnet')]
+    else:
+        ips = [ipaddress.ip_network(addr) for addr in bldt.getFairlyBlockedResourcesSet('ip')]
+        ipsubs = [ipaddress.ip_network(addr) for addr in bldt.getFairlyBlockedResourcesSet('ipsubnet')]
+    ipsall = ips + ipsubs
+    if collapse:
+        return list(ipaddress.collapse_addresses(ipsall))
+    return list(map(str, ipsall))
