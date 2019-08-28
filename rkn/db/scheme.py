@@ -57,7 +57,7 @@ class Content(Base):
     in_dump = Column(Boolean)
     decision_id = Column(Integer, ForeignKey('decision.id'), nullable=False)
     blocktype_id = Column(Integer, ForeignKey('blocktype.id'), nullable=False)
-    entrytype_id = Column(Integer, nullable=False) # ForeignKey('entrytype.id') - not mandatory
+    entrytype_id = Column(Integer, ForeignKey('entrytype.id'), nullable=False) # ForeignKey('entrytype.id') - not mandatory
     first_dump_id = Column(Integer, ForeignKey('dumpinfo.id'), nullable=False)
     last_dump_id = Column(Integer, ForeignKey('dumpinfo.id'), nullable=False)
 
