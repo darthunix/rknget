@@ -1,7 +1,7 @@
 import psycopg2
 from psycopg2.extras import DictCursor
 
-from settings import dbconn
+from db.settings import dbconn
 
 connection = psycopg2.connect(**dbconn, cursor_factory = DictCursor)
 
