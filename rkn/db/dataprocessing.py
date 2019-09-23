@@ -32,7 +32,8 @@ def addDumpInfoRecord(updateTime, updateTimeUrgently, **kwargs):
     cursor.execute(
         '''INSERT INTO dumpinfo 
         (update_time, update_time_urgently, parse_time, parsed)
-        VALUES (%s, %s, %s, %s) RETURNING id'''
+        VALUES (%s, %s, %s, %s) RETURNING id''',
+        (updateTime, updateTimeUrgently, datetime.now().astimezone(), False)
     )
     connection.commit()
 
