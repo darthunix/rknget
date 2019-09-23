@@ -155,18 +155,18 @@ def getOuterIDHashes():
     return {c['outer_id']:c['hash'] for c in cursor}
 
 
-def updateContentPresence(dump_id, disabledIDSet=[]):
+def updateContentPresence(dump_id, disabledIDList=[]):
     """
     Sets in_dump to false for removed IDs from the set
     Sets the latest dump_id label from alive records
     :param dump_id: dump id
-    :param disabledIDSet: IDs set
+    :param disabledIDList: IDs list
     :return: True
     """
     cursor.execute(
         '''UPDATE content SET in_dump = True
         WHERE outer_id = ANY(%s)''',
-        (disabledIDSet,)
+        (disabledIDList,)
     )
 
     cursor.execute(
