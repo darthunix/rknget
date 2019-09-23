@@ -2,8 +2,7 @@ from db import resourceblocking
 
 
 def unblockResources(connstr):
-    resblocker = ResourceBlocker(connstr)
-    resblocker.unblockAllResources()
+    resourceblocking.unblockAllResources()
 
 
 def blockResourcesFairly(connstr):
