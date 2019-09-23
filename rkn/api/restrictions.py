@@ -1,4 +1,4 @@
-import blockdata
+from db import blockdata
 
 import ipaddress
 from functools import reduce

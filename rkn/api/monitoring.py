@@ -1,4 +1,4 @@
-import dbmon
+from db import dbmon
 
 from api.restrictions import getBlockedIPList
 import ipaddress

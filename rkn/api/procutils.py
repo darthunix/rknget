@@ -1,4 +1,4 @@
-import procdata
+from db import procdata
 
 """
 This module works with Log

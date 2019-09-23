@@ -3,7 +3,7 @@ import xml.etree.ElementTree
 from datetime import datetime
 
 from api import parseutils
-import dataprocessing
+from db import dataprocessing
 
 
 class RKNDumpFormatException(BaseException):

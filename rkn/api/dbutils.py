@@ -1,4 +1,4 @@
-import dbops
+from db import dbops
 from api import parseutils
 
 """

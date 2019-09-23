@@ -1,4 +1,4 @@
-import resourceblocking
+from db import resourceblocking
 
 
 def unblockResources(connstr):
