@@ -1,73 +1,48 @@
-from sqlalchemy import or_, and_
+from dbconn import connection
+from datetime import datetime
 
-from db.dbhandler import DatabaseHandler
-from db.scheme import *
+cursor = connection.cursor()
 
 
-class BlockData(DatabaseHandler):
+def getBlockedResourcesSet(entityname):
     """
-    Successor class, which provides blocked resources data
+    :param entityname: resource entitytype
+    :return: resources' values set
+    """
+    cursor.execute(
+        '''SELECT value FROM resource
+        WHERE is_blocked = TRUE
+        AND entitytype_id = (SELECT id FROM entitytype WHERE name = %s) 
+        ''', (entityname,)
+    )
+    return {c['value'] for c in cursor}
+
+
+def getFairlyBlockedResourcesSet(entityname):
+    """
+    :param entityname: resource entitytype
+    :return: resources' values set
     """
 
-    def __init__(self, connstr):
-        super(BlockData, self).__init__(connstr)
+    fairness = {
+        'http': 'default', 'https': 'default',
+        'domain': 'domain',
+        'domain-mask': 'domain-mask',
+        'ip': 'ip', 'ipsubnet': 'ip', 'ipv6': 'ip', 'ipv6subnet': 'ip'
+    }
 
-    def _getBlockedResourcesQuery(self, entityname):
-        """
-        :param entitytype: resource entitytype
-        :return: query
-        """
-        # Distinct is not needed for set()
-        # distinct(Resource.value). \
-        return self._session.query(Resource.value). \
-            join(Entitytype, Resource.entitytype_id == Entitytype.id). \
-            filter(Entitytype.name == entityname). \
-            filter(Resource.is_blocked == True)
-
-    def getBlockedResourcesSet(self, entityname):
-        """
-        :param entitytype: resource entitytype
-        :return: resources' values set
-        """
-        query = self._getBlockedResourcesQuery(entityname)
-
-        resSet = {resrow.value for resrow in query.all()}
-
-        return resSet
-
-
-    def _getFairlyBlockedResourcesQuery(self, entityname):
-        """
-        :param entitytype: resource entitytype
-        :return: query
-        """
-        # Distinct is not needed for set()
-        # distinct(Resource.value). \
-
-        fairness = {
-            'http': 'default', 'https': 'default',
-            'domain': 'domain',
-            'domain-mask': 'domain-mask',
-            'ip': 'ip', 'ipsubnet': 'ip', 'ipv6': 'ip', 'ipv6subnet': 'ip'
-        }
-
-        return self._session.query(Resource.value). \
-            join(Entitytype, Resource.entitytype_id == Entitytype.id). \
-            join(Content, Resource.content_id == Content.id). \
-            join(BlockType, Content.blocktype_id == BlockType.id). \
-            filter(Entitytype.name == entityname). \
-            filter(Resource.is_blocked == True). \
-            filter(BlockType.name == fairness[entityname])
-
-    def getFairlyBlockedResourcesSet(self, entityname):
-        """
-        :param entitytype: resource entitytype
-        :return: resources' values set
-        """
-        query = self._getFairlyBlockedResourcesQuery(entityname)
-
-        resSet = {resrow.value for resrow in query.all()}
-
-        return resSet
+    cursor.execute(
+        '''SELECT value FROM resource
+        WHERE id IN (
+            SELECT resource.id FROM resource 
+            JOIN content ON resource.content_id = content.id
+            JOIN blocktype ON content.blocktype_id = blocktype.id
+            JOIN entitytype ON resource.entitytype_id =  entitytype.id
+            WHERE resource.is_blocked = True 
+            AND entitytype.name = %s
+            AND blocktype.name = %s
+        )''', (entityname, fairness[entityname],)
+    )
+    return {c['value'] for c in cursor}
 
 

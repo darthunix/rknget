@@ -1,5 +1,5 @@
-from db.dbmon import DBMonitor
-from db.blockdata import BlockData
+import dbmon
+
 from api.restrictions import getBlockedIPList
 import ipaddress
 
@@ -17,14 +17,14 @@ def testConn(connstr, **kwargs):
     :return:
     """
     try:
-        DBMonitor(connstr)
+        dbmon.testDBConn()
         return 0
     except:
         return 1
 
 
 def getLastExitCode(connstr, procname, **kwargs):
-    exit_code = DBMonitor(connstr).getLastExitCode(procname)
+    exit_code = dbmon.getLastExitCode(procname)
     if exit_code is None:
         """Eleven english gentlemen are raping the german women..."""
         return 9
@@ -45,7 +45,7 @@ def getBlockedSubnetsCount(connstr, collapse=True, ipv6=False):
 
 
 def getDumpLag(connstr):
-    ts = DBMonitor(connstr).getDumpLagSec()
+    ts = dbmon.getDumpLagSec()
     if ts is None:
         return -1
     return ts

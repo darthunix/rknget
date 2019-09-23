@@ -1,4 +1,4 @@
-from db.resourceblocking import ResourceBlocker
+import resourceblocking
 
 
 def unblockResources(connstr):
@@ -13,7 +13,7 @@ def blockResourcesFairly(connstr):
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: blocked rows count
     """
-    return ResourceBlocker(connstr).blockFairly()
+    return resourceblocking.blockFairly()
 
 
 def blockResourcesExcessively(connstr, src_entity, dst_entity):
@@ -22,7 +22,7 @@ def blockResourcesExcessively(connstr, src_entity, dst_entity):
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: blocked rows count
     """
-    return ResourceBlocker(connstr).blockExcessively(src_entity, dst_entity)
+    return resourceblocking.blockExcessively(src_entity, dst_entity)
 
 
 def blockCustom(connstr):
@@ -31,7 +31,7 @@ def blockCustom(connstr):
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: blocked rows count
     """
-    return ResourceBlocker(connstr).blockCustom()
+    return resourceblocking.blockCustom()
 
 
 def unblockSet(connstr, resSet):
@@ -42,4 +42,4 @@ def unblockSet(connstr, resSet):
     :param resSet: the set of resources
     :return: blocked rows count
     """
-    return ResourceBlocker(connstr).unblockSet(resSet)
+    return resourceblocking.unblockSet(resSet)

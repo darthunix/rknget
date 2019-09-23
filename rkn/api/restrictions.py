@@ -1,5 +1,5 @@
-from db.blockdata import BlockData
-import re
+import blockdata
+
 import ipaddress
 from functools import reduce
 
@@ -15,7 +15,7 @@ def _getBlockedDataList(connstr, entityname):
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: entities set
     """
-    return list(BlockData(connstr).getBlockedResourcesSet(entityname))
+    return list(blockdata.getBlockedResourcesSet(entityname))
 
 
 def getBlockedHTTP(connstr):
@@ -23,7 +23,7 @@ def getBlockedHTTP(connstr):
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return URLs strings list
     """
-    return list(BlockData(connstr).getBlockedResourcesSet('http'))
+    return list(blockdata.getBlockedResourcesSet('http'))
 
 
 def getBlockedHTTPS(connstr):
@@ -31,7 +31,7 @@ def getBlockedHTTPS(connstr):
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return URLs strings list
     """
-    return list(BlockData(connstr).getBlockedResourcesSet('https'))
+    return list(blockdata.getBlockedResourcesSet('https'))
 
 
 def getBlockedIPsFromSubnets(connstr):
@@ -41,7 +41,7 @@ def getBlockedIPsFromSubnets(connstr):
     :return: IP list.
     """
     ipsubs = {ipaddress.ip_network(addr)
-              for addr in BlockData(connstr).getBlockedResourcesSet('ipsubnet')}
+              for addr in blockdata.getBlockedResourcesSet('ipsubnet')}
 
     return [str(host) for ipsub in ipsubs for host in ipsub.hosts()]
 
@@ -54,13 +54,12 @@ def getBlockedIPList(connstr, collapse=True, ipv6=False):
     :param ipv6: use ipv6 entities
     :return: The list of ip subnets, using /32 for ips.
     """
-    bldt = BlockData(connstr)
     if ipv6:
-        ips = [ipaddress.ip_network(addr) for addr in bldt.getBlockedResourcesSet('ipv6')]
-        ipsubs = [ipaddress.ip_network(addr) for addr in bldt.getBlockedResourcesSet('ipv6subnet')]
+        ips = [ipaddress.ip_network(addr) for addr in blockdata.getBlockedResourcesSet('ipv6')]
+        ipsubs = [ipaddress.ip_network(addr) for addr in blockdata.getBlockedResourcesSet('ipv6subnet')]
     else:
-        ips = [ipaddress.ip_network(addr) for addr in bldt.getBlockedResourcesSet('ip')]
-        ipsubs = [ipaddress.ip_network(addr) for addr in bldt.getBlockedResourcesSet('ipsubnet')]
+        ips = [ipaddress.ip_network(addr) for addr in blockdata.getBlockedResourcesSet('ip')]
+        ipsubs = [ipaddress.ip_network(addr) for addr in blockdata.getBlockedResourcesSet('ipsubnet')]
     ipsall = ips + ipsubs
     if collapse:
         return list(ipaddress.collapse_addresses(ipsall))
@@ -167,9 +166,8 @@ def getBlockedDomains(connstr, collapse=True, wc_asterize=False):
     :param wc_asterize: merge domains if wildcard analogue exists
     :return: 2 sets: domains and wildcard domains
     """
-    bldt = BlockData(connstr)
-    domains = bldt.getBlockedResourcesSet('domain')
-    wdomains = bldt.getBlockedResourcesSet('domain-mask')
+    domains = blockdata.getBlockedResourcesSet('domain')
+    wdomains = blockdata.getBlockedResourcesSet('domain-mask')
     if not collapse:
         if wc_asterize:
             wdomains = map(lambda s: '*.'+s, wdomains)
@@ -193,7 +191,7 @@ def getBlockedDNS(connstr, collapse=True):
     :return: domains set
     """
     if not collapse:
-        return list(BlockData(connstr).getBlockedResourcesSet('domain'))
+        return list(blockdata.getBlockedResourcesSet('domain'))
     # Else
     return getBlockedDomains(connstr, collapse=True)[0]
 
@@ -207,7 +205,7 @@ def getBlockedWildcardDNS(connstr, collapse=True, wc_asterize=False):
     :return: wildcard domains set
     """
     if not collapse:
-        wdomains = BlockData(connstr).getBlockedResourcesSet('domain-mask')
+        wdomains = blockdata.getBlockedResourcesSet('domain-mask')
         if wc_asterize:
             wdomains = map(lambda s: '*.'+s, wdomains)
         return list(wdomains)
@@ -223,13 +221,12 @@ def getFairlyBlockedIPs(connstr, collapse=True, ipv6=False):
     :param ipv6: use ipv6 entities
     :return: The list of ip subnets, using /32 for ips.
     """
-    bldt = BlockData(connstr)
     if ipv6:
-        ips = [ipaddress.ip_network(addr) for addr in bldt.getFairlyBlockedResourcesSet('ipv6')]
-        ipsubs = [ipaddress.ip_network(addr) for addr in bldt.getFairlyBlockedResourcesSet('ipv6subnet')]
+        ips = [ipaddress.ip_network(addr) for addr in blockdata.getFairlyBlockedResourcesSet('ipv6')]
+        ipsubs = [ipaddress.ip_network(addr) for addr in blockdata.getFairlyBlockedResourcesSet('ipv6subnet')]
     else:
-        ips = [ipaddress.ip_network(addr) for addr in bldt.getFairlyBlockedResourcesSet('ip')]
-        ipsubs = [ipaddress.ip_network(addr) for addr in bldt.getFairlyBlockedResourcesSet('ipsubnet')]
+        ips = [ipaddress.ip_network(addr) for addr in blockdata.getFairlyBlockedResourcesSet('ip')]
+        ipsubs = [ipaddress.ip_network(addr) for addr in blockdata.getFairlyBlockedResourcesSet('ipsubnet')]
     ipsall = ips + ipsubs
     if collapse:
         return list(ipaddress.collapse_addresses(ipsall))

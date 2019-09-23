@@ -1,4 +1,4 @@
-from db.dbops import DBOperator
+import dbops
 from api import parseutils
 
 """
@@ -44,7 +44,7 @@ def addCustomResource(connstr, entitytype, value, **kwargs):
         pass
     try:
         return(
-            DBOperator(connstr).addCustomResource(
+            dbops.addCustomResource(
                 entitytype=entitytype,
                 value=value,
             )
@@ -61,7 +61,7 @@ def delCustomResource(connstr, entitytype, value, **kwargs):
     """
     try:
         return(
-            DBOperator(connstr).delCustomResource(
+            dbops.delCustomResource(
                 entitytype=entitytype,
                 value=value,
             )
@@ -80,30 +80,30 @@ def findResource(connstr, value, entitytype=None, **kwargs):
         kwargs['args'] = []
     if entitytype == 'all':
         entitytype = None
-    return _dbAsText(*DBOperator(connstr).findResource(value, entitytype, *kwargs['args']))
+    return _dbAsText(*dbops.findResource(value, entitytype, None, *kwargs['args']))
 
 
 def getContent(connstr, outer_id, **kwargs):
 
-    headers, row = DBOperator(connstr).getContent(outer_id)
+    headers, row = dbops.getContent(outer_id)
     result = _dbAsText(headers, [row])
     if kwargs.get('args') is not None \
             and 'full' in kwargs.get('args') \
             and len(row) > 0:
         content_id = row[headers.index('id')]
         result = result + '\nRESOURCES\n'
-        result = result + _dbAsText(*DBOperator(connstr).getResourceByContentID(content_id))
+        result = result + _dbAsText(*dbops.getResourceByContentID(content_id))
 
     return result
 
 
 def showDumpStats(connstr, **kwargs):
-    return _dbAsText(*DBOperator(connstr).getBlockCounters())
+    return _dbAsText(*dbops.getBlockCounters())
 
 
 def showDumpInfo(connstr, **kwargs):
     return '\n'.join(str(k).ljust(16) + '\t' + str(v)
-                     for k, v in DBOperator(connstr).getLastDumpInfo().items())
+                     for k, v in dbops.getLastDumpInfo().items())
 
 
 def delContent(connstr, outer_id, **kwargs):
@@ -112,7 +112,7 @@ def delContent(connstr, outer_id, **kwargs):
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: True if deleted, False otherwise
     """
-    return DBOperator(connstr).delContent(outer_id)
+    return dbops.delContent(outer_id)
 
 
 def unlockJobs(connstr, procname=None, **kwargs):
@@ -125,13 +125,13 @@ def unlockJobs(connstr, procname=None, **kwargs):
     if procname == 'all':
         procname = None
 
-    return DBOperator(connstr).unlockJobs(procname)
+    return dbops.unlockJobs(procname)
 
 
 def getActiveJobs(connstr, procname=None, **kwargs):
     if procname == 'all':
         procname = None
-    return _dbAsText(*DBOperator(connstr).getActiveJobs(procname))
+    return _dbAsText(*dbops.getActiveJobs(procname))
 
 
 def getLastJobs(connstr, procname=None, **kwargs):
@@ -146,12 +146,12 @@ def getLastJobs(connstr, procname=None, **kwargs):
     if procname == 'all':
         procname = None
 
-    return _dbAsText(*DBOperator(connstr).getLastJobs(procname, count))
+    return _dbAsText(*dbops.getLastJobs(procname, count))
 
 
 def getDecsnInfo(connstr, de_id, **kwargs):
-    return _dbAsText(*DBOperator(connstr).getDecisionByID(de_id))
+    return _dbAsText(*dbops.getDecisionByID(de_id))
 
 
 def getDecisionByID(connstr, outer_id, **kwargs):
-    return _dbAsText(*DBOperator(connstr).getDecisionByOuterID(outer_id))
+    return _dbAsText(*dbops.getDecisionByOuterID(outer_id))

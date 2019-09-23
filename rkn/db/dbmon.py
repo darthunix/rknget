@@ -1,36 +1,23 @@
-from db.dbhandler import DatabaseHandler
-from db.scheme import *
+from dbconn import connection
+from datetime import datetime
+
+cursor = connection.cursor()
+
+def testDBConn():
+    cursor.execute('SELECT 1')
+    return cursor.fetchone()[0]
 
 
-class DBMonitor(DatabaseHandler):
-    """
-    Successor class, which provides operations for CLI API (dbutils)
-    """
+def getLastExitCode(procname):
+    cursor.execute('SELECT exit_code FROM log WHERE procname = %s LIMIT 1', (procname,))
+    if cursor.rowcount == 0:
+        return None
+    return cursor.fetchone()['exit_code']
 
-    _resourceQuery = None
-    _contentQuery = None
 
-    def __init__(self, connstr):
-        super(DBMonitor, self).__init__(connstr)
-
-    def getLastExitCode(self, procname):
-        query = self._session.query(Log.exit_code).\
-            filter(Log.procname == procname). \
-            filter(Log.exit_code != None). \
-            order_by(Log.id.desc()).\
-            limit(1)
-        row = query.first()
-        if row is None:
-            return None
-        return row.exit_code
-
-    def getDumpLagSec(self):
-        query = self._session.query(DumpInfo.update_time).\
-            filter(DumpInfo.parsed == True). \
-            order_by(DumpInfo.id.desc()).\
-            limit(1)
-        row = query.first()
-        if row is None:
-            return None
-        return (self._now - row.update_time).seconds
-
+def getDumpLagSec():
+    cursor.execute('SELECT update_time FROM dumpinfo WHERE parsed = True '
+                   'ORDER BY id DESC LIMIT 1')
+    if cursor.rowcount == 0:
+        return None
+    return (datetime.now().astimezone() - cursor.fetchone()['update_time']).seconds

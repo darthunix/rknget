@@ -1,9 +1,8 @@
-from db.procdata import ProcData
+import procdata
 
 """
 This module works with Log
 """
-
 
 def checkRunning(connstr, procname):
     """
@@ -11,7 +10,7 @@ def checkRunning(connstr, procname):
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: True if the same program is running, else False
     """
-    return ProcData(connstr).checkRunning(procname)
+    return procdata.checkRunning(procname)
 
 
 def addLogEntry(connstr, procname):
@@ -19,7 +18,7 @@ def addLogEntry(connstr, procname):
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: Log id for this process instance
     """
-    return ProcData(connstr).addLogEntry(procname)
+    return procdata.addLogEntry(procname)
 
 
 def finishJob(connstr, log_id, exit_code, result):
@@ -27,5 +26,5 @@ def finishJob(connstr, log_id, exit_code, result):
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: Log id for this process instance
     """
-    return ProcData(connstr).finishJob(log_id, exit_code, result)
+    return procdata.finishJob(log_id, exit_code, result)
 

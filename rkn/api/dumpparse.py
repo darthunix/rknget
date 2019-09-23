@@ -3,7 +3,7 @@ import xml.etree.ElementTree
 from datetime import datetime
 
 from api import parseutils
-from db.dataprocessing import DataProcessor
+import dataprocessing
 
 
 class RKNDumpFormatException(BaseException):
@@ -25,7 +25,7 @@ def parsedRecently(update_time, connstr):
     :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return:
     """
-    parsed_time = DataProcessor(connstr).getLastParsedTime()
+    parsed_time = dataprocessing.getLastParsedTime()
     if parsed_time:
         return parsed_time.timestamp() > float(update_time)
     return False
@@ -40,7 +40,6 @@ def parse(xmldump, connstr):
 
     """
     xmlroot = xml.etree.ElementTree.XML(xmldump)
-    dataproc = DataProcessor(connstr)
 
     if xmlroot is None:
         raise RKNDumpFormatException("Parse error: no incorrect dump!")
@@ -48,10 +47,10 @@ def parse(xmldump, connstr):
     counter = 0
 
     # Getting ID:Hash dict
-    outerHashes = dataproc.getOuterIDHashes()
+    outerHashes = dataprocessing.getOuterIDHashes()
 
     # Creating new dump info record
-    dump_id = dataproc.addDumpInfoRecord(**xmlroot.attrib)
+    dump_id = dataprocessing.addDumpInfoRecord(**xmlroot.attrib)
 
     # Filling tables
     for content in xmlroot.iter('content'):
@@ -65,15 +64,15 @@ def parse(xmldump, connstr):
         else:
             if outerHashes.get(dump_outer_id) is not None:
                 # Divergence
-                dataproc.delContent(dump_outer_id)
+                dataprocessing.delContent(dump_outer_id)
                 outerHashes.pop(dump_outer_id)
             # We've got new content entry. Importing decision
             des = content.find('decision')
             if des is None:
                 raise RKNDumpFormatException("Parse error: no Decision for content id: " + content.attrib['id'])
-            decision_id = dataproc.addDecision(**des.attrib)  # date, number, org
+            decision_id = dataprocessing.addDecision(**des.attrib)  # date, number, org
             # Importing content
-            content_id = dataproc.addContent(dump_id, decision_id, **content.attrib)
+            content_id = dataprocessing.addContent(dump_id, decision_id, **content.attrib)
 
         # resourses parsing...
         # walking through the available tags
@@ -128,17 +127,17 @@ def parse(xmldump, connstr):
                     continue
 
                 if entitytype is not None:
-                    dataproc.addResource(content_id=content_id,
+                    dataprocessing.addResource(content_id=content_id,
                                          last_change=element.attrib.get('ts'),
                                          entitytype=entitytype,
                                          value=value)
 
     # There are content rows have been removed remain.
 
-    dataproc.updateContentPresence(dump_id, set(outerHashes.keys()))
+    dataprocessing.updateContentPresence(dump_id, set(outerHashes.keys()))
     # Set dump entry parsed.
-    dataproc.setDumpParsed(dump_id)
+    dataprocessing.setDumpParsed(dump_id)
 
-    dataproc.commitclose()
+    dataprocessing.commitChanges()
 
     return True

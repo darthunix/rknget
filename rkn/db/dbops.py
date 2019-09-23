@@ -1,189 +1,260 @@
-from sqlalchemy import or_, and_
-from sqlalchemy import func
-from sqlalchemy.orm import aliased
+from dbconn import connection
+from datetime import datetime
+from psycopg2 import sql
 
-from db.dataprocessing import DataProcessor
-from db.scheme import *
+cursor = connection.cursor()
 
+UNLOCK_EXIT_CODE=255
 
-class DBOperator(DataProcessor):
+def _buildFields(*args):
     """
-    Successor class, which provides operations for CLI API (dbutils)
+    Builds columns list to obtain in query
+    :param args: fields list
+    :return: fields Composable
+    """
+    if not args or len(args) == 0:
+        return sql.SQL('*')
+    return sql.SQL(',').join(
+        [sql.Identifier(f) for f in args]
+    )
+
+
+def _outputQuery(cursor, columns=None):
+    """
+    Returns columns list and values list's list
+    :param cursor: cursor with executed query
+    :return:
+    """
+    if cursor.rowcount == 0:
+        return [], []
+    if not columns:
+        columns = [col.name for col in cursor.description]
+    return columns, \
+           [[row[c] for c in columns] for row in cursor]
+
+
+def blockFairly():
+    """
+    Enables blocking resoures according to its blocktype and presence in the dump
+    Any other blocking is excessive a priori
+    """
+    cursor.execute(
+        '''UPDATE resource SET is_blocked=True
+        WHERE id IN (
+            SELECT resource.id FROM resource 
+            JOIN content ON resource.content_id = content.id
+            JOIN blocktype ON content.blocktype_id = blocktype.id
+            JOIN entitytype ON resource.entitytype_id =  entitytype.id
+            WHERE blocktype.name = 'default' AND entitytype.name IN ('http','https')
+            OR blocktype.name = 'domain' AND entitytype.name = 'domain'
+            OR blocktype.name = 'domain-mask' AND entitytype.name = 'domain-mask'
+            OR blocktype.name = 'ip' AND entitytype.name IN ('ip','ipsubnet','ipv6','ipv6subnet')
+        )'''
+    )
+    connection.commit()
+    return int(cursor.statusmessage.split(' ')[1])
+
+
+def addCustomResource(entitytype, value):
+    """
+    Adds custom resource to the table.
+    :return: new or existing resource ID
+    """
+    cursor.execute(
+        '''SELECT id FROM resource
+        WHERE is_custom = True
+        AND value=% 
+        ''', (value,)
+    )
+    # If exists, finish with returning ID
+    if cursor.rowcount > 0:
+        return cursor.fetchone()['id']
+
+    cursor.execute(
+        '''INSERT INTO resource (content_id, last_change, value, is_custom, entitytype_id)
+        VALUES (%s,%s,%s,%s, (SELECT id FROM entitytype WHERE name = %s) )
+        RETURNING id
+        ''', (None, datetime.now().astimezone(), value, True, entitytype)
+    )
+    connection.commit()
+    return cursor.fetchone()['id']
+
+
+def delCustomResource(entitytype, value):
+    """
+    Deletes custom resource from the table.
+    :return: Count of deleted rows (ideally strictly 1)
+    """
+    cursor.execute(
+        '''DELETE FROM resource
+        WHERE is_custom = True
+        AND value = %s
+        AND entitytype_id = (SELECT id FROM entitytype WHERE name = %s)
+        ''', (value,entitytype,)
+    )
+
+    return int(cursor.statusmessage.split(' ')[1])
+
+
+def findResource(value=None, entitytype=None, content_id=None, *args):
+
+    query = sql.SQL('''SELECT
+    resource.id, content.outer_id, entitytype.name as entitytype,
+    blocktype.name as blocktype, resource.is_custom, resource.is_blocked,
+    resource.value
+    FROM resource
+        LEFT JOIN content on resource.content_id = content.id
+        JOIN entitytype ON resource.entitytype_id = entitytype.id
+        LEFT JOIN blocktype on content.blocktype_id = blocktype.id
+        WHERE value LIKE %s
+        ''')
+    #.format(_buildFields(*args))
+    if not value or value == '':
+        value = '%'
+    else:
+        value = '%' + value + '%'
+
+    if entitytype:
+        query = query + sql.SQL(' AND entitytype_id = '
+                                '(SELECT id FROM entitytype WHERE name = {0})'
+                                ).format(sql.Literal(entitytype))
+    if content_id:
+        query = query + sql.SQL(' AND content.id = {0}'
+                                ).format(sql.Literal(content_id))
+
+    cursor.execute(query, (value,))
+
+    return _outputQuery(cursor, args)
+
+
+def getContent(outer_id):
+
+    cursor.execute(
+        '''SELECT content.id, content.outer_id,
+        content.include_time, content.in_dump,
+        blocktype.name as blocktype,
+        di1.parse_time as first_time,
+        di2.parse_time as last_time
+        FROM content
+        JOIN blocktype ON content.blocktype_id = blocktype.id
+        JOIN dumpinfo AS di1 ON content.first_dump_id = di1.id
+        JOIN dumpinfo AS di2 ON content.last_dump_id = di2.id
+        WHERE outer_id = %s
+        ''', (outer_id,)
+    )
+
+    return _outputQuery(cursor)
+
+
+def getResourceByContentID(content_id, *args):
+        return findResource(content_id=content_id)
+
+
+def getBlockCounters():
+
+    cursor.execute(
+        '''SELECT entitytype.name, count(1) AS sum
+        FROM resource 
+        JOIN entitytype ON resource.entitytype_id = entitytype.id
+        GROUP BY entitytype.id, is_blocked
+        HAVING is_blocked=True'''
+    )
+
+    return _outputQuery(cursor, args)
+
+
+def getLastDumpInfo():
+    """
+    The same function as the dataprocessing's one.
+    Returns the last dump state. If no entries, empty dict.
+    :return: dict column->value or dict().
     """
 
-    _resourceQuery = None
-    _contentQuery = None
+    cursor.execute(
+        '''SELECT * FROM dumpinfo
+        ORDER BY id DESC LIMIT 1'''
+    )
 
-    def __init__(self, connstr):
-        super(DBOperator, self).__init__(connstr)
-        self._resourceQuery = self._session.query(Resource.id,
-                                                  Content.outer_id,
-                                                  Entitytype.name.label('entitytype'),
-                                                  BlockType.name.label('blocktype'),
-                                                  Resource.is_custom,
-                                                  Resource.is_blocked,
-                                                  Resource.value). \
-            outerjoin(Content, Resource.content_id == Content.id). \
-            join(Entitytype, Resource.entitytype_id == Entitytype.id). \
-            outerjoin(BlockType, Content.blocktype_id == BlockType.id)
+    return _outputQuery(cursor)
 
-        DumpInfoA = aliased(DumpInfo, name='DumpInfoA')
-        self._contentQuery = self._session.query(Content.id,
-                                                 Content.outer_id,
-                                                 Content.include_time,
-                                                 Content.in_dump,
-                                                 DumpInfo.parse_time.label('first_time'),
-                                                 DumpInfoA.parse_time.label('last_time')). \
-            join(BlockType, Content.blocktype_id == BlockType.id). \
-            join(DumpInfo, Content.first_dump_id == DumpInfo.id). \
-            join(DumpInfoA, Content.last_dump_id == DumpInfoA.id)
 
-        self._decisionQuery = self._session.query(Decision.id,
-                                                  Decision.decision_code,
-                                                  Decision.decision_date,
-                                                  Organisation.name). \
-            join(Organisation, Decision.org_id == Organisation.id)
+def unlockJobs(procname=None):
 
-    def addCustomResource(self, entitytype, value):
-        """
-        Adds custom resource to the table.
-        :return: new or existing resource ID
-        """
-        # Let the KeyErrorException raise if an alien blocktype revealed
-        entitytype_id = self._entitytypeDict[entitytype]
+    query = sql.SQL('''UPDATE log SET exit_code=%s
+        WHERE exit_code is Null'''
+    )
+    if procname:
+        query = query + sql.SQL(' AND procname = {0}'
+                                ).format(sql.Literal(procname))
 
-        # Checking if such resource exists
-        res = self._session.query(Resource).\
-            filter_by(entitytype_id=entitytype_id).\
-            filter_by(value=value). \
-            filter_by(is_custom=True). \
-            first()
+    cursor.execute(query, (UNLOCK_EXIT_CODE,))
+    connection.commit()
 
-        if res is None:
-            return self.addResource(content_id=None,
-                                    last_change=self._now,
-                                    entitytype=entitytype,
-                                    value=value,
-                                    is_custom=True)
-        else:
-            return res.id
+    return int(cursor.statusmessage.split(' ')[1])
 
-    def delCustomResource(self, entitytype, value):
-        """
-        Deletes custom resource from the table.
-        :return: True if deleted, False otherwise
-        """
-        # Let the KeyErrorException raise if an alien blocktype revealed
-        entitytype_id = self._entitytypeDict[entitytype]
 
-        result = self._session.query(Resource). \
-            filter_by(entitytype_id=entitytype_id). \
-            filter_by(value=value). \
-            filter_by(is_custom=True). \
-            delete()
+def getActiveJobs(procname=None):
 
-        return [False, True][result]
+    query = sql.SQL(
+        '''SELECT id, start_time, procname
+        FROM log WHERE exit_code is Null
+        '''
+    )
+    if procname:
+        query = query + sql.SQL(' AND procname = {0}'
+                                ).format(sql.Literal(procname))
 
-    def findResource(self, value, entitytype=None, *args):
-        """
-        Searches resources in the table by value
-        :param value: value to search in
-        :param args: column names
-        :param entitytype: type of entity or any if not set
-        :return: All entries matching the value. With headers.
-        """
-        if value == '':
-            query = self._resourceQuery
-        else:
-            query = self._resourceQuery. \
-                filter(Resource.value.like('%' + value + '%'))
+    query = query + sql.SQL(' ORDER BY id DESC')
 
-        if entitytype is not None:
-            entitytype_id = self._entitytypeDict.get(entitytype)
-            if entitytype_id is not None:
-                query = query.filter(Resource.entitytype_id == entitytype_id)
-            else:
-                query = query.filter(False)
+    cursor.execute(query)
 
-        rows = query.all()
-        return self._outputQueryRows(rows, *args)
+    return _outputQuery(cursor)
 
-    def getContent(self, outer_id):
-        row = self._contentQuery. \
-            filter(Content.outer_id == outer_id).first()
-        if row:
-            return row._fields, list(row)
-        else:
-            return [], []
 
-    def getResourceByContentID(self, content_id, *args):
-        rows = self._resourceQuery. \
-            filter(Resource.content_id == content_id).all()
-        return self._outputQueryRows(rows, *args)
+def getLastJobs(procname=None, count=10):
 
-    def getBlockCounters(self):
-        rows = self._session.query(Entitytype.name,
-                                   func.count(True)). \
-            join(Resource, Resource.entitytype_id == Entitytype.id). \
-            group_by(Entitytype.id).all()
-        return self._outputQueryRows(rows)
+    query = sql.SQL(
+        '''SELECT id, exit_code, start_time,
+        finish_time, procname FROM log
+        '''
+    )
+    if procname:
+        query = query + sql.SQL(' WHERE procname = {0}'
+                                ).format(sql.Literal(procname))
 
-    def getLastDumpInfo(self):
-        """
-        The same function as the dataprocessing's one.
-        Returns the last dump state. If no entries, empty dict.
-        :return: dict column->value or dict().
-        """
-        row = self._session.query(DumpInfo). \
-            order_by(DumpInfo.id.desc()).first()
-        fields = DumpInfo.__table__.columns.keys()
-        if row is None:
-            return dict()
-        return {
-            f: getattr(row, f) for f in fields
-        }
+    query = query + sql.SQL(' ORDER BY id DESC')
+    query = query + sql.SQL(' LIMIT {0}'
+                                ).format(sql.Literal(count))
+    cursor.execute(query)
 
-    def unlockJobs(self, procname=None):
-        query = self._session.query(Log). \
-            filter(Log.exit_code == None)
-        if procname is not None:
-            query = query.filter(Log.procname == procname)
+    return _outputQuery(cursor)
 
-        result = query.update({'exit_code': 255, 'result': 'Supressed'},
-                              synchronize_session=False)
-        return result
 
-    def getActiveJobs(self, procname=None):
-        query = self._session.query(Log.id,
-                                    Log.start_time,
-                                    Log.procname). \
-            filter(Log.exit_code == None)
-        if procname is not None:
-            query = query.filter(Log.procname == procname)
-        rows = query.order_by(Log.id.desc()).all()
+def getDecisionByID(de_id, *args):
 
-        return self._outputQueryRows(rows)
+    cursor.execute(
+        '''SELECT decision.id, decision_code, decision_date,
+        organisation.name
+        FROM decision
+        JOIN organisation ON decision.org_id = organisation.id
+        WHERE decision.id = %s
+        ''', (de_id,)
+    )
 
-    def getLastJobs(self, procname=None, count=10):
-        query = self._session.query(Log.id,
-                                    Log.exit_code,
-                                    Log.start_time,
-                                    Log.finish_time,
-                                    Log.procname)
-        if procname is not None:
-            query = query.filter(Log.procname == procname)
-        rows = query.order_by(Log.id.desc()).\
-            limit(count).all()
+    return _outputQuery(cursor, args)
 
-        return self._outputQueryRows(rows)
 
-    def getDecisionByID(self, de_id, *args):
-        rows = self._decisionQuery. \
-            filter(Decision.id == de_id).all()
-        return self._outputQueryRows(rows, *args)
+def getDecisionByOuterID(outer_id, *args):
 
-    def getDecisionByOuterID(self, outer_id, *args):
-        rows = self._decisionQuery. \
-            outerjoin(Content, Decision.id == Content.decision_id). \
-            filter(Content.outer_id == outer_id).all()
-        return self._outputQueryRows(rows, *args)
+    cursor.execute(
+        '''SELECT decision.id, decision_code, decision_date,
+        organisation.name
+        FROM decision
+        JOIN organisation ON decision.org_id = organisation.id
+        JOIN content ON decision.id = content.decision_id
+        WHERE outer_id = %s
+        ''', (outer_id,)
+    )
+
+    return _outputQuery(cursor, args)
+

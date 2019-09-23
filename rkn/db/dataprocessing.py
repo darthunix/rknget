@@ -1,170 +1,198 @@
-from sqlalchemy import or_, and_
+from dbconn import connection
+from datetime import datetime
+from psycopg2 import sql
 
-from db.dbhandler import DatabaseHandler
-from db.scheme import *
+cursor = connection.cursor()
+connection.autocommit = False
 
 
-class DataProcessor(DatabaseHandler):
+def commitChanges():
+    # Force committing after long transaction
+    connection.commit()
+
+
+def getLastParsedTime():
     """
-    Successor class, which provides data processing functions
+    Returns the last dump state. If no entries, empty dict.
+    :return: datetime value
     """
-
-    _orgDict = dict()
-    _blocktypeDict = dict()
-    _entitytypeDict = dict()
-
-    def __init__(self, connstr):
-        super(DataProcessor, self).__init__(connstr)
-        self._initTableDicts()
+    cursor.execute(
+        '''SELECT parse_time FROM dumpinfo
+        WHERE parsed = True
+        ORDER BY id DESC LIMIT 1'''
+    )
+    return cursor.fetchone()['parse_time']
 
 
-    def _getNameIDMapping(self, table):
-        """
-        :param: table
-        :return: dict NAME -> ID
-        """
-        dbim = dict()
-        for row in self._session.query(table):
-            dbim[row.name] = row.id
-        return dbim
+def addDumpInfoRecord(updateTime, updateTimeUrgently, **kwargs):
+    """
+    The arguments were named corresponding with
+    <reg> tag attributes to simplify kwargs passthrough
+    """
+    cursor.execute(
+        '''INSERT INTO dumpinfo 
+        (update_time, update_time_urgently, parse_time, parsed)
+        VALUES (%s, %s, %s, %s) RETURNING id'''
+    )
+    connection.commit()
 
-    def _initTableDicts(self):
-        """
-        Fetching dictionaries for future usage
-        """
-        self._blocktypeDict = self._getNameIDMapping(BlockType)
-        self._entitytypeDict = self._getNameIDMapping(Entitytype)
-        self._orgDict = self._getNameIDMapping(Organisation)
+    return cursor.fetchone()['id']
 
-    def getLastParsedTime(self):
-        """
-        Returns the last dump state. If no entries, empty dict.
-        :return: datetime value
-        """
-        row = self._session.query(DumpInfo.parse_time). \
-            filter_by(parsed=True). \
-            order_by(DumpInfo.id.desc()).first()
-        if row is None:
-            return None
-        return row.parse_time
 
-    def addDumpInfoRecord(self, updateTime, updateTimeUrgently, **kwargs):
-        """
-        The arguments were named corresponding with
-        <reg> tag attributes to simplify kwargs passthrough
-        """
-        dump_info_record = DumpInfo(update_time=updateTime,
-                                    update_time_urgently=updateTimeUrgently,
-                                    parse_time=self._now,
-                                    parsed=False)
-        self._session.add(dump_info_record)
-        self._session.commit()
-        return dump_info_record.id
+def setDumpParsed(dump_id):
 
-    def setDumpParsed(self, dump_id):
-        dump_info_record = self._session.query(DumpInfo).filter_by(id=dump_id).first()
-        dump_info_record.parsed = True
-        self._session.commit()
+    cursor.execute(
+        '''UPDATE dumpinfo SET parsed = True
+        WHERE id = %s''',
+        (dump_id,)
+    )
+    connection.commit()
 
-    def addDecision(self, date, number, org):
-        """
-        The arguments were named corresponding with
-        <decision> tag attributes to simplify kwargs passthrough
-        """
-        # Adding missing organisation to the table
-        if self._orgDict.get(org) is None:
-            newOrg = Organisation(name=org)
-            self._session.add(newOrg)
-            # Let it be committed, not so much orgs exist
-            self._session.flush()
-            self._orgDict[org] = newOrg.id
+    return True
 
-        # Insert or update is not supported by this ORM module
 
-        des_id = self._session.query(Decision.id).filter_by(decision_code=number).first()
-        if des_id is not None:
-            return des_id
+def addDecision(date, number, org):
+    """
+    Not atomic
+    The arguments were named corresponding with
+    <decision> tag attributes to simplify kwargs passthrough
+    :return: decision ID
+    """
+    cursor.execute(
+        '''SELECT id FROM decision
+        WHERE decision_code = %s''',
+        (number,)
+    )
+    # Decision exists in the database
+    if cursor.rowcount > 0:
+        return cursor.fetchone()['id']
 
-        newDes = Decision(decision_date=date,
-                 decision_code=number,
-                 org_id=self._orgDict[org])
-
-        self._session.add(newDes)
-        self._session.flush()
-        return newDes.id
-
-    def addContent(self, dump_id, decision_id, id, includeTime,
-                   hash, entryType, blockType='default', ts=None, **kwargs):
-        """
-        The arguments were named corresponding with
-        <content> tag attributes to simplify kwargs passthrough
-        """
-        # Let the KeyErrorException raise if an alien blocktype revealed
-        blocktype_id = self._blocktypeDict[blockType]
-
-        # Checking whether content is in the table but disabled
-        cnt = self._session.query(Content).filter_by(outer_id=id).first()
-        if cnt is not None and not cnt.in_dump:
-            # Cascade purging must place to be
-            self._session.delete(cnt)
-            self._session.flush()
-
-        newContent = Content(
-            outer_id=id,
-            include_time=includeTime,
-            hash=hash,
-            last_change=ts,
-            in_dump=True,
-            decision_id=decision_id,
-            blocktype_id=blocktype_id,
-            entrytype_id=entryType,
-            first_dump_id=dump_id,
-            last_dump_id=dump_id
+    # Adding organisation to the table if missing
+    cursor.execute(
+        '''SELECT id FROM organisation
+        WHERE name = %s''',
+        (org,)
+    )
+    if cursor.rowcount == 0:
+        cursor.execute(
+            '''INSERT INTO organisation (name)
+            VALUES (%s) RETURNING id''',
+            (org,),
         )
-        self._session.add(newContent)
-        self._session.flush()
-        return newContent.id
+    org_id = cursor.fetchone()['id']
 
-    def delContent(self, outer_id):
-        """
-        Deletes content and all its resources
-        :param outer_id: from dump
-        :return: content_id
-        """
-        result = self._session.query(Content.id). \
-            filter_by(outer_id=outer_id).delete()
-        self._session.flush()
-        # [False, True][result] will fail
-        # if outer_id uniqueness constraint will be disabled.
-        return result > 0
+    # Adding missing decision to the table
+    cursor.execute(
+        '''INSERT INTO DECISION
+        (decision_code, decision_date, org_id)
+        VALUES (%s, %s, %s) RETURNING id''',
+        (number, date, org_id,)
+    )
 
-    def getOuterIDHashes(self):
-        # The set is faster because unsorted
-        return {cnt.outer_id: cnt.hash for cnt in self._session.query(Content.outer_id, Content.hash).filter_by(in_dump=True).all()}
+    return cursor.fetchone()['id']
 
-    def updateContentPresence(self, dump_id, disabledIDSet):
-        # The list is required to avoid *args passthrough
-        # filter_by shouldn't be used with in_ and notin_
-        if len(disabledIDSet) > 0:
-            self._session.query(Content).filter(Content.outer_id.in_(disabledIDSet))\
-                .update({'in_dump': False}, synchronize_session=False)
-        self._session.query(Content).filter(Content.in_dump == True)\
-            .update({'last_dump_id': dump_id}, synchronize_session=False)
-        self._session.flush()
 
-    def addResource(self, content_id, entitytype, value, is_custom=False, last_change=None):
-        """
-        Adds resource to the table
-        :return: new resource ID
-        """
-        # Let the KeyErrorException raise if an alien blocktype revealed
-        entitytype_id = self._entitytypeDict[entitytype]
+def addContent(dump_id, decision_id, id, includeTime, hash,
+               entryType, blockType='default', ts=None, **kwargs):
+    """
+    Not atomic
+    The arguments were named corresponding with
+    <content> tag attributes to simplify kwargs passthrough
+    """
+    # Checking whether content is in the table but disabled
+    # Cascade purging must place to be
+    cursor.execute(
+        '''DELETE FROM content
+        WHERE outer_id = %s
+        AND in_dump is False
+        ''',
+        (id,)
+    )
 
-        res = Resource(content_id=content_id,
-                       last_change=last_change,
-                       entitytype_id=entitytype_id,
-                       value=value,
-                       is_custom=is_custom)
-        self._session.add(res)
-        self._session.flush()
-        return res.id
+    cursor.execute(
+        '''INSERT INTO content
+        VALUES (DEFAULT, %s, %s, %s, %s, %s, %s, 
+        (SELECT id FROM blocktype WHERE name = %s), 
+        %s, %s, %s)
+        RETURNING id
+        ''', (id, includeTime, hash, ts, True, decision_id,
+              blockType,
+              entryType, dump_id, dump_id)
+    )
+
+    return cursor.fetchone()['id']
+
+
+def delContent(outer_id):
+    """
+    Deletes content and all its resources
+    :param outer_id: from dump
+    :return: content_id, or None if nothing deleted
+    """
+    cursor.execute(
+        '''DELETE FROM content
+        WHERE outer_id = %s
+        RETURNING id
+        ''',
+        (outer_id,)
+    )
+    connection.commit()
+    if cursor.rowcount > 0:
+        return cursor.fetchone()['id']
+    else:
+        return None
+
+
+def getOuterIDHashes():
+
+    cursor.execute(
+        '''SELECT outer_id, hash
+        FROM content
+        WHERE in_dump = True
+        '''
+    )
+    return {c['outer_id']:c['hash'] for c in cursor}
+
+
+def updateContentPresence(dump_id, disabledIDSet=None):
+    """
+    Sets in_dump to false for removed IDs from the set
+    Sets the latest dump_id label from alive records
+    :param dump_id: dump id
+    :param disabledIDSet: IDs set
+    :return: True
+    """
+    cursor.execute(
+        '''UPDATE content SET in_dump = True
+        WHERE outer_id = ANY(%s)''',
+        (disabledIDSet,)
+    )
+
+    cursor.execute(
+        '''UPDATE content SET last_dump_id = %w
+        WHERE in_dump = True''',
+        (dump_id,)
+    )
+    connection.commit()
+    return True
+
+def addResource(content_id, entitytype, value, is_custom=False, last_change=None):
+    """
+    Not atomic
+    Adds resource to the table
+    :return: new resource ID
+    """
+
+    cursor.execute(
+        '''INSERT INTO resource
+        (content_id, last_change, entitytype_id, value, is_custom)
+        VALUES (%s, %s,
+        (SELECT id FROM entitytype WHERE name = %s), 
+        %s, %s)
+        RETURNING id
+        ''', (content_id, last_change,
+              entitytype,
+              value, is_custom,)
+    )
+
+    return cursor.fetchone()['id']
