@@ -166,11 +166,11 @@ def updateContentPresence(dump_id, disabledIDSet=[]):
     cursor.execute(
         '''UPDATE content SET in_dump = True
         WHERE outer_id = ANY(%s)''',
-        (disabledIDSet)
+        (disabledIDSet,)
     )
 
     cursor.execute(
-        '''UPDATE content SET last_dump_id = %w
+        '''UPDATE content SET last_dump_id = %s
         WHERE in_dump = True''',
         (dump_id,)
     )
