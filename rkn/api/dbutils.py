@@ -86,7 +86,7 @@ def findResource(connstr, value, entitytype=None, **kwargs):
 def getContent(connstr, outer_id, **kwargs):
 
     headers, row = dbops.getContent(outer_id)
-    result = _dbAsText(headers, [row])
+    result = _dbAsText(headers, row)
     if kwargs.get('args') is not None \
             and 'full' in kwargs.get('args') \
             and len(row) > 0:
