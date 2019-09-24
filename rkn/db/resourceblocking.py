@@ -43,16 +43,16 @@ def blockExcessively(src_entity, dst_entity):
     """
     cursor.execute(
         '''UPDATE resource SET is_blocked=True
-        WHERE content_id in (
-	        SELECT content.id FROM resource
+        WHERE entitytype_id = (
+            SELECT id FROM entitytype WHERE name = %s
+        )
+        AND id in (
+	        SELECT resource.id FROM resource
 	        JOIN content ON resource.content_id = content.id
 	        JOIN entitytype ON resource.entitytype_id = entitytype.id
 	        WHERE entitytype.name = %s
 	    )
-	    AND entitytype_id in (
-	        SELECT id FROM entitytype WHERE name = %s
-	    )
-        ''', (src_entity, dst_entity,)
+        ''', (dst_entity, src_entity,)
     )
     connection.commit()
     return int(cursor.statusmessage.split(' ')[1])
