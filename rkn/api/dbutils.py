@@ -102,8 +102,9 @@ def showDumpStats(connstr, **kwargs):
 
 
 def showDumpInfo(connstr, **kwargs):
-    return '\n'.join(str(k).ljust(16) + '\t' + str(v)
-                     for k, v in dbops.getLastDumpInfo().items())
+    return _dbAsText(*dbops.getLastDumpInfo())
+    #return '\n'.join(str(k).ljust(16) + '\t' + str(v)
+    #                 for k, v in dbops.getLastDumpInfo().items())
 
 
 def delContent(connstr, outer_id, **kwargs):
