@@ -63,7 +63,7 @@ def addCustomResource(entitytype, value):
     cursor.execute(
         '''SELECT id FROM resource
         WHERE is_custom = True
-        AND value=% 
+        AND value=%s
         ''', (value,)
     )
     # If exists, finish with returning ID
