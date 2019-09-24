@@ -1,5 +1,5 @@
 dbconn = {
-    "host": "10.1.240.90",
+    "host": "127.0.0.1",
     "port": "5432",
     "dbname": "rkndb",
     "user": "rkn",
