@@ -40,8 +40,8 @@ def addCustomResource(connstr, entitytype, value, **kwargs):
         if not checks[entitytype](value):
             return 'Value error'
     except KeyError:
-        # No checks for this entity type, but going ahead.
-        pass
+        # No checks for this entity type
+        return 'Entitytype error'
     try:
         return(
             dbops.addCustomResource(

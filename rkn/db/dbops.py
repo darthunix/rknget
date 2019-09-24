@@ -92,6 +92,7 @@ def delCustomResource(entitytype, value):
         AND entitytype_id = (SELECT id FROM entitytype WHERE name = %s)
         ''', (value,entitytype,)
     )
+    connection.commit()
 
     return int(cursor.statusmessage.split(' ')[1])
 
