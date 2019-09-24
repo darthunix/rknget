@@ -10,7 +10,7 @@ def checkRunning(procname):
 
 
 def addLogEntry(procname):
-    cursor.execute('INSERT INTO log (start_time,procname) VALUES (%s,%s)', (datetime.now(), 'test'))
+    cursor.execute('INSERT INTO log (start_time,procname) VALUES (%s,%s)', (datetime.now(), procname))
     connection.commit()
 
 
