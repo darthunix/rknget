@@ -161,7 +161,7 @@ def getBlockCounters():
         HAVING is_blocked=True'''
     )
 
-    return _outputQuery(cursor, args)
+    return _outputQuery(cursor)
 
 
 def getLastDumpInfo():
