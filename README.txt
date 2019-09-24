@@ -16,7 +16,6 @@
     pyYaml (для всех программ)
     json (для всех программ)
     psycopg2 (web api)
-    sqlalchemy (web api)
     redis (web api)
 
 Установка серверной части:

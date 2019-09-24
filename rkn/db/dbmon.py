@@ -9,7 +9,10 @@ def testDBConn():
 
 
 def getLastExitCode(procname):
-    cursor.execute('SELECT exit_code FROM log WHERE procname = %s LIMIT 1', (procname,))
+    cursor.execute(
+        '''SELECT exit_code FROM log
+        WHERE procname = %s
+        ORDER BY id DESC  git LIMIT 1''', (procname,))
     if cursor.rowcount == 0:
         return None
     return cursor.fetchone()['exit_code']
