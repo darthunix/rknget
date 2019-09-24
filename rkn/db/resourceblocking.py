@@ -46,11 +46,12 @@ def blockExcessively(src_entity, dst_entity):
         WHERE entitytype_id = (
             SELECT id FROM entitytype WHERE name = %s
         )
-        AND id in (
+        AND id IN (
 	        SELECT resource.id FROM resource
 	        JOIN content ON resource.content_id = content.id
 	        JOIN entitytype ON resource.entitytype_id = entitytype.id
 	        WHERE entitytype.name = %s
+	        AND in_dump = True
 	    )
         ''', (dst_entity, src_entity,)
     )
