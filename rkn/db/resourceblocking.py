@@ -22,10 +22,13 @@ def blockFairly():
             JOIN content ON resource.content_id = content.id
             JOIN blocktype ON content.blocktype_id = blocktype.id
             JOIN entitytype ON resource.entitytype_id =  entitytype.id
-            WHERE blocktype.name = 'default' AND entitytype.name IN ('http','https')
-            OR blocktype.name = 'domain' AND entitytype.name = 'domain'
-            OR blocktype.name = 'domain-mask' AND entitytype.name = 'domain-mask'
-            OR blocktype.name = 'ip' AND entitytype.name IN ('ip','ipsubnet','ipv6','ipv6subnet')
+            WHERE (
+                blocktype.name = 'default' AND entitytype.name IN ('http','https')
+                OR blocktype.name = 'domain' AND entitytype.name = 'domain'
+                OR blocktype.name = 'domain-mask' AND entitytype.name = 'domain-mask'
+                OR blocktype.name = 'ip' AND entitytype.name IN ('ip','ipsubnet','ipv6','ipv6subnet')
+                )
+            AND in_dump = True
         )'''
     )
     connection.commit()
