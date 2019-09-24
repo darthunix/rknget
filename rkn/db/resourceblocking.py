@@ -5,7 +5,6 @@ cursor = connection.cursor()
 
 
 def unblockAllResources():
-    connection.isolation_level = 'SERIALIZABLE'
     cursor.execute('UPDATE resource SET is_blocked=False')
     connection.commit()
 

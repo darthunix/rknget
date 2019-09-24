@@ -10,8 +10,9 @@ def checkRunning(procname):
 
 
 def addLogEntry(procname):
-    cursor.execute('INSERT INTO log (start_time,procname) VALUES (%s,%s)', (datetime.now(), procname))
+    cursor.execute('INSERT INTO log (start_time,procname) VALUES (%s,%s) RETURNING id', (datetime.now(), procname))
     connection.commit()
+    return cursor.fetchone()['id']
 
 
 def finishJob(log_id, exit_code, result=None):

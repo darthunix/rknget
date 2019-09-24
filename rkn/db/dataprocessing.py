@@ -52,9 +52,8 @@ def setDumpParsed(dump_id):
     return True
 
 
-def addDecision(date, number, org):
+def addDecision(date, number, org, atomic=False):
     """
-    Not atomic
     The arguments were named corresponding with
     <decision> tag attributes to simplify kwargs passthrough
     :return: decision ID
@@ -89,12 +88,14 @@ def addDecision(date, number, org):
         VALUES (%s, %s, %s) RETURNING id''',
         (number, date, org_id,)
     )
+    if atomic:
+        connection.commit()
 
     return cursor.fetchone()['id']
 
 
 def addContent(dump_id, decision_id, id, includeTime, hash,
-               entryType, blockType='default', ts=None, **kwargs):
+               entryType, blockType='default', ts=None, atomic=False, **kwargs):
     """
     Not atomic
     The arguments were named corresponding with
@@ -120,6 +121,9 @@ def addContent(dump_id, decision_id, id, includeTime, hash,
               blockType,
               entryType, dump_id, dump_id)
     )
+
+    if atomic:
+        connection.commit()
 
     return cursor.fetchone()['id']
 
@@ -177,7 +181,7 @@ def updateContentPresence(dump_id, disabledIDList=[]):
     connection.commit()
     return True
 
-def addResource(content_id, entitytype, value, is_custom=False, last_change=None):
+def addResource(content_id, entitytype, value, is_custom=False, last_change=None, atomic=False):
     """
     Not atomic
     Adds resource to the table
@@ -195,5 +199,8 @@ def addResource(content_id, entitytype, value, is_custom=False, last_change=None
               entitytype,
               value, is_custom,)
     )
+
+    if atomic:
+        connection.commit()
 
     return cursor.fetchone()['id']
