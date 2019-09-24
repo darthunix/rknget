@@ -85,12 +85,12 @@ def findResource(connstr, value, entitytype=None, **kwargs):
 
 def getContent(connstr, outer_id, **kwargs):
 
-    headers, row = dbops.getContent(outer_id)
-    result = _dbAsText(headers, row)
+    headers, rows = dbops.getContent(outer_id)
+    result = _dbAsText(headers, rows)
     if kwargs.get('args') is not None \
             and 'full' in kwargs.get('args') \
-            and len(row) > 0:
-        content_id = row.get('id')
+            and len(rows) > 0:
+        content_id = rows[0][headers.index('id')]
         result = result + '\nRESOURCES\n'
         result = result + _dbAsText(*dbops.getResourceByContentID(content_id))
 
