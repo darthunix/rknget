@@ -33,28 +33,6 @@ def _outputQuery(cursor, columns=None):
            [[row[c] for c in columns] for row in cursor]
 
 
-def blockFairly():
-    """
-    Enables blocking resoures according to its blocktype and presence in the dump
-    Any other blocking is excessive a priori
-    """
-    cursor.execute(
-        '''UPDATE resource SET is_blocked=True
-        WHERE id IN (
-            SELECT resource.id FROM resource 
-            JOIN content ON resource.content_id = content.id
-            JOIN blocktype ON content.blocktype_id = blocktype.id
-            JOIN entitytype ON resource.entitytype_id =  entitytype.id
-            WHERE blocktype.name = 'default' AND entitytype.name IN ('http','https')
-            OR blocktype.name = 'domain' AND entitytype.name = 'domain'
-            OR blocktype.name = 'domain-mask' AND entitytype.name = 'domain-mask'
-            OR blocktype.name = 'ip' AND entitytype.name IN ('ip','ipsubnet','ipv6','ipv6subnet')
-        )'''
-    )
-    connection.commit()
-    return int(cursor.statusmessage.split(' ')[1])
-
-
 def addCustomResource(entitytype, value):
     """
     Adds custom resource to the table.
