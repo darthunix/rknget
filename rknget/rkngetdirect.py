@@ -16,7 +16,6 @@ import zipfile
 sys.path.append('../')
 sys.path.append('../rkn')
 from api import dumpparse, blocking, procutils
-from db.dbconn import connstr
 import rknsoapwrapper
 from common import utils
 
@@ -37,14 +36,14 @@ def main():
     utils.createFolders(config['Global']['tmppath'])
 
     try:
-        running = procutils.checkRunning(connstr, procname=config['Global']['procname'])
+        running = procutils.checkRunning(procname=config['Global']['procname'])
     except Exception as e:
         logger.critical('Couldn\'t obtain information from the database\n' + str(e))
         return 9
     if running and not config['Global'].get('forcerun'):
         logger.critical('The same program is running at this moment. Halting...')
         return 0
-    log_id = procutils.addLogEntry(connstr, procname=config['Global']['procname'])
+    log_id = procutils.addLogEntry(procname=config['Global']['procname'])
 
     try:
         if config['Miscellaneous']['uselocaldump']:
@@ -60,13 +59,13 @@ def main():
             update_time = max(dumpDate['lastDumpDate'],
                               dumpDate['lastDumpDateUrgently'])/1000
 
-            parsed_recently =  dumpparse.parsedRecently(update_time,connstr)
+            parsed_recently =  dumpparse.parsedRecently(update_time)
 
             if parsed_recently:
                 result = 'Last dump is relevant'
                 logger.info(result)
                 # Updating the state in database
-                procutils.finishJob(connstr, log_id, 0, result)
+                procutils.finishJob(log_id, 0, result)
                 return 0
 
             # Obtaining dump file
@@ -83,7 +82,7 @@ def main():
         # Freeing memory
         del dumpFile
 
-        dumpparse.parse(xmldump, connstr)
+        dumpparse.parse(xmldump)
         # Freeing memory
         del xmldump
         logger.info('Dump have been parsed to database successfully')
@@ -91,15 +90,15 @@ def main():
         # Blocking
         rowsdict = dict()
         # It may slow down but is safe
-        blocking.unblockResources(connstr)
+        blocking.unblockResources()
         # Fairly blocking first
         logger.debug('Blocking fairly (as is)')
-        rows = blocking.blockResourcesFairly(connstr)
+        rows = blocking.blockResourcesFairly()
         rowsdict['fairly'] = rows
         logger.info('Blocked fairly ' + str(rows) + ' rows')
         for src, dst in config['Blocking']:
             logger.info('Blocking ' + str(dst) + ' from ' + str(src))
-            rows = blocking.blockResourcesExcessively(connstr, src, dst)
+            rows = blocking.blockResourcesExcessively(src, dst)
             if rows is not None:
                 logger.info('Blocked ' + str(rows) + ' rows')
                 rowsdict[str(dst) + '->' + str(src)] = rows
@@ -108,7 +107,7 @@ def main():
         # Blocking custom resouces
         if config['Miscellaneous']['custom']:
             logger.info('Blocking custom resources')
-            rows = blocking.blockCustom(connstr)
+            rows = blocking.blockCustom()
             logger.info('Blocked ' + str(rows))
             rowsdict['Custom'] = rows
 
@@ -116,17 +115,17 @@ def main():
         whitelist = config['Miscellaneous']['whitelist']
         if whitelist is not None:
             logger.info('Unblocking whitelist')
-            rows = blocking.unblockSet(connstr, whitelist)
+            rows = blocking.unblockSet(whitelist)
             logger.info('Unblocked ' + str(rows))
             rowsdict['Undone'] = rows
 
         # Updating the state in the database
         result = 'Blocking results\n' + '\n'.join(k + ':' + str(v) for k,v in rowsdict.items())
-        procutils.finishJob(connstr, log_id, 0, result)
+        procutils.finishJob(log_id, 0, result)
         logger.info('Blocking was finished, enjoy your 1984th')
 
     except Exception as e:
-        procutils.finishJob(connstr, log_id, 1, str(e))
+        procutils.finishJob(log_id, 1, str(e))
         logger.error(str(e))
         return getattr(e, 'errno', 1)
 
