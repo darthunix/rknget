@@ -16,7 +16,7 @@ import zipfile
 sys.path.append('../')
 sys.path.append('../rkn')
 from api import dumpparse, blocking, procutils
-from dbconn import connstr
+from db.dbconn import connstr
 import rknsoapwrapper
 from common import utils
 

@@ -19,7 +19,6 @@ def main():
         return 1
     metval = fields.pop('method', None)
     module = __import__(modval, fromlist=[metval])
-    fields['connstr'] = connstr
 
     # Shoot your leg through!!!
     data = getattr(module, metval)(**fields)

@@ -10,10 +10,9 @@ Return type doesn't matters, but must be serializable.
 """
 
 
-def testConn(connstr, **kwargs):
+def testConn(**kwargs):
     """
     Tests a connection.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return:
     """
     try:
@@ -23,7 +22,7 @@ def testConn(connstr, **kwargs):
         return 1
 
 
-def getLastExitCode(connstr, procname, **kwargs):
+def getLastExitCode(procname, **kwargs):
     exit_code = dbmon.getLastExitCode(procname)
     if exit_code is None:
         """Eleven english gentlemen are raping the german women..."""
@@ -32,19 +31,18 @@ def getLastExitCode(connstr, procname, **kwargs):
     return exit_code
 
 
-def getBlockedIPCount(connstr, ipv6=False):
-    ipsall = getBlockedIPList(connstr=connstr, collapse=True, ipv6=ipv6)
+def getBlockedIPCount(ipv6=False):
+    ipsall = getBlockedIPList(collapse=True, ipv6=ipv6)
     ipNum = sum(map(lambda x: x.num_addresses, ipsall))
     return ipNum
 
 
-def getBlockedSubnetsCount(connstr, collapse=True, ipv6=False):
-    return len(getBlockedIPList(connstr=connstr,
-                                collapse=collapse,
+def getBlockedSubnetsCount(collapse=True, ipv6=False):
+    return len(getBlockedIPList(collapse=collapse,
                                 ipv6=ipv6))
 
 
-def getDumpLag(connstr):
+def getDumpLag():
     ts = dbmon.getDumpLagSec()
     if ts is None:
         return -1

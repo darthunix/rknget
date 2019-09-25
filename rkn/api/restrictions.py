@@ -9,35 +9,31 @@ I had to switch returned datasets to list to make those json serialisable
 """
 
 
-def _getBlockedDataList(connstr, entityname):
+def _getBlockedDataList(entityname):
     """
     Function for debug purposes
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: entities set
     """
     return list(blockdata.getBlockedResourcesSet(entityname))
 
 
-def getBlockedHTTP(connstr):
+def getBlockedHTTP():
     """
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return URLs strings list
     """
     return list(blockdata.getBlockedResourcesSet('http'))
 
 
-def getBlockedHTTPS(connstr):
+def getBlockedHTTPS():
     """
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return URLs strings list
     """
     return list(blockdata.getBlockedResourcesSet('https'))
 
 
-def getBlockedIPsFromSubnets(connstr):
+def getBlockedIPsFromSubnets():
     """
     Explodes restricted ip subnets into IP list.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: IP list.
     """
     ipsubs = {ipaddress.ip_network(addr)
@@ -46,10 +42,9 @@ def getBlockedIPsFromSubnets(connstr):
     return [str(host) for ipsub in ipsubs for host in ipsub.hosts()]
 
 
-def getBlockedIPList(connstr, collapse=True, ipv6=False):
+def getBlockedIPList(collapse=True, ipv6=False):
     """
     Function for getting only IP blockings as IPAddress objects.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge and minimize IPs and networks
     :param ipv6: use ipv6 entities
     :return: The list of ip subnets, using /32 for ips.
@@ -66,15 +61,14 @@ def getBlockedIPList(connstr, collapse=True, ipv6=False):
     return list(ipsall)
 
 
-def getBlockedIPs(connstr, collapse=True, ipv6=False):
+def getBlockedIPs(collapse=True, ipv6=False):
     """
     Converts objects to text.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge and minimize IPs and networks
     :param ipv6: use ipv6 entities
     :return: The total and the list of ip subnets, using /32 for ips
     """
-    ipsall = getBlockedIPList(connstr, collapse, ipv6)
+    ipsall = getBlockedIPList(collapse, ipv6)
     return list(map(str, ipsall))
 
 
@@ -158,10 +152,9 @@ def mkdnstree(domains, wdomains):
     return dnstree
 
 
-def getBlockedDomains(connstr, collapse=True, wc_asterize=False):
+def getBlockedDomains(collapse=True, wc_asterize=False):
     """
     Brand new procedure. Uses domain tree to cleanup excess domains.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge domains if wildcard analogue exists
     :param wc_asterize: merge domains if wildcard analogue exists
     :return: 2 sets: domains and wildcard domains
@@ -182,10 +175,9 @@ def getBlockedDomains(connstr, collapse=True, wc_asterize=False):
     return list( map(list,dnslistmerged(dnsmap, wc_asterize)) )
 
 
-def getBlockedDNS(connstr, collapse=True):
+def getBlockedDNS(collapse=True):
     """
     Returns domains list only.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge domains if wildcard analogue exists.
     Calls getBlockedDomains, no way else.
     :return: domains set
@@ -193,13 +185,12 @@ def getBlockedDNS(connstr, collapse=True):
     if not collapse:
         return list(blockdata.getBlockedResourcesSet('domain'))
     # Else
-    return getBlockedDomains(connstr, collapse=True)[0]
+    return getBlockedDomains(collapse=True)[0]
 
 
-def getBlockedWildcardDNS(connstr, collapse=True, wc_asterize=False):
+def getBlockedWildcardDNS(collapse=True, wc_asterize=False):
     """
     Returns wildcard domains list only.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge domains if wildcard analogue exists.
     Calls getBlockedDomains, no way else.
     :return: wildcard domains set
@@ -210,13 +201,12 @@ def getBlockedWildcardDNS(connstr, collapse=True, wc_asterize=False):
             wdomains = map(lambda s: '*.'+s, wdomains)
         return list(wdomains)
     # Else
-    return getBlockedDomains(connstr, collapse=True, wc_asterize=wc_asterize)[1]
+    return getBlockedDomains(collapse=True, wc_asterize=wc_asterize)[1]
 
 
-def getFairlyBlockedIPs(connstr, collapse=True, ipv6=False):
+def getFairlyBlockedIPs(collapse=True, ipv6=False):
     """
     Function for getting only IP blockings as IPAddress objects.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param collapse: merge and minimize IPs and networks
     :param ipv6: use ipv6 entities
     :return: The list of ip subnets, using /32 for ips.

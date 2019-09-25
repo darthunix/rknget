@@ -48,7 +48,6 @@ class WebMainApi:
 
         # Shoot your leg through!!!
         module = __import__(modval, fromlist=[metval])
-        fields['connstr'] = dbconn.connstr
         data = self._formatContent(getattr(module, metval)(**fields))
 
         # Redis part

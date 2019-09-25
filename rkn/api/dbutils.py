@@ -30,10 +30,9 @@ def _dbAsText(headers, rows):
     return '\n'.join(result)
 
 
-def addCustomResource(connstr, entitytype, value, **kwargs):
+def addCustomResource(entitytype, value, **kwargs):
     """
     Adds custom resource to the database's Resource table.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: row ID or None for erroneous entitytype
     """
     try:
@@ -53,10 +52,9 @@ def addCustomResource(connstr, entitytype, value, **kwargs):
         return "Entity type error"
 
 
-def delCustomResource(connstr, entitytype, value, **kwargs):
+def delCustomResource(entitytype, value, **kwargs):
     """
     Deletes custom resource to the database's Resource table.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: True if deleted, False otherwise
     """
     try:
@@ -70,10 +68,9 @@ def delCustomResource(connstr, entitytype, value, **kwargs):
         return "Entity type error"
 
 
-def findResource(connstr, value, entitytype=None, **kwargs):
+def findResource(value, entitytype=None, **kwargs):
     """
     Adds custom resource to the database's Resource table.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: row ID or None for erroneous entitytype
     """
     if kwargs.get('args') is None:
@@ -83,7 +80,7 @@ def findResource(connstr, value, entitytype=None, **kwargs):
     return _dbAsText(*dbops.findResource(value, entitytype, None, *kwargs['args']))
 
 
-def getContent(connstr, outer_id, **kwargs):
+def getContent(outer_id, **kwargs):
 
     headers, rows = dbops.getContent(outer_id)
     result = _dbAsText(headers, rows)
@@ -97,29 +94,27 @@ def getContent(connstr, outer_id, **kwargs):
     return result
 
 
-def showDumpStats(connstr, **kwargs):
+def showDumpStats(**kwargs):
     return _dbAsText(*dbops.getBlockCounters())
 
 
-def showDumpInfo(connstr, **kwargs):
+def showDumpInfo(**kwargs):
     return _dbAsText(*dbops.getLastDumpInfo())
     #return '\n'.join(str(k).ljust(16) + '\t' + str(v)
     #                 for k, v in dbops.getLastDumpInfo().items())
 
 
-def delContent(connstr, outer_id, **kwargs):
+def delContent(outer_id, **kwargs):
     """
     Deletes custom resource to the database's Resource table.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return: True if deleted, False otherwise
     """
     return dbops.delContent(outer_id)
 
 
-def unlockJobs(connstr, procname=None, **kwargs):
+def unlockJobs(procname=None, **kwargs):
     """
     Sets exit_code and result of the all log entires with empty exit_code.
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :param procname: specify procname to unlock
     :return: Affected entries count.
     """
@@ -129,13 +124,13 @@ def unlockJobs(connstr, procname=None, **kwargs):
     return dbops.unlockJobs(procname)
 
 
-def getActiveJobs(connstr, procname=None, **kwargs):
+def getActiveJobs(procname=None, **kwargs):
     if procname == 'all':
         procname = None
     return _dbAsText(*dbops.getActiveJobs(procname))
 
 
-def getLastJobs(connstr, procname=None, **kwargs):
+def getLastJobs(procname=None, **kwargs):
 
     if kwargs.get('args') is None:
         count = 10
@@ -150,9 +145,9 @@ def getLastJobs(connstr, procname=None, **kwargs):
     return _dbAsText(*dbops.getLastJobs(procname, count))
 
 
-def getDecsnInfo(connstr, de_id, **kwargs):
+def getDecsnInfo(de_id, **kwargs):
     return _dbAsText(*dbops.getDecisionByID(de_id))
 
 
-def getDecisionByID(connstr, outer_id, **kwargs):
+def getDecisionByID(outer_id, **kwargs):
     return _dbAsText(*dbops.getDecisionByOuterID(outer_id))

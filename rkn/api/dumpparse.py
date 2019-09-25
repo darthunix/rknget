@@ -18,11 +18,10 @@ class RKNDumpFormatException(BaseException):
 #        self.errors = errors
 
 
-def parsedRecently(update_time, connstr):
+def parsedRecently(update_time):
     """
     Checks if dump info becomes obsolete
     :param update_time: dump update time in seconds
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     :return:
     """
     parsed_time = dataprocessing.getLastParsedTime()
@@ -31,10 +30,9 @@ def parsedRecently(update_time, connstr):
     return False
 
 
-def parse(xmldump, connstr):
+def parse(xmldump):
     """
     :param xmldump: dump.xml
-    :param connstr: smth like "engine://user:pswd@host:port/dbname"
     Parses xml from binary dump has been loaded on init.
     Has much hardcode caused by shitty dump format
 
