@@ -35,6 +35,6 @@ def getDataCached(func, *args, **kwargs):
     if cache:
         return pickle.loads(cache)
 
-    result = func(args, kwargs)
+    result = func(*args, **kwargs)
     _setCache(key, pickle.dumps(result))
     return result
