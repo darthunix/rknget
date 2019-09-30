@@ -2,6 +2,7 @@ from db import blockdata
 
 import ipaddress
 from functools import reduce
+import api.caching
 
 """
 This module only operates with Resources data
@@ -221,3 +222,52 @@ def getFairlyBlockedIPs(collapse=True, ipv6=False):
     if collapse:
         return list(ipaddress.collapse_addresses(ipsall))
     return list(map(str, ipsall))
+
+
+# Further stateless blocklists formed
+
+
+def _makeSet(x):
+    if not x:
+        return {}
+    elif type(x) is str:
+        return {x}
+    elif hasattr(x, '__iter__'):
+        return set(x)
+    return {x}
+
+
+def getBlockedDataSet(entitytypes, blocktypes, srcenttys=None, **kwargs):
+    """
+    Returns blocked data set
+    :param entitytypes: target entity type set
+    :param blocktypes: content blocktype set
+    :param srcenttys: additional entity type set for excessive blockings
+    :return: set of strings
+    """
+    return blockdata.getBlockedData(
+        _makeSet(entitytypes),
+        _makeSet(blocktypes),
+        _makeSet(srcenttys))
+
+
+def getBlockedPrefixes(collapse=True, ipv6=False, **kwargs):
+    """
+    Converts objects to text.
+    :param collapse: merge and minimize IPs and networks
+    :param ipv6: use ipv6 entities
+    :return: The total and the list of ip subnets, using /32 for ips
+    """
+    blocktype = 'ip'
+    if ipv6:
+        entitytypes = ['ipv6', 'ipv6subnet']
+    else:
+        entitytypes = ['ip', 'ipsubnet']
+    prefixes = map(ipaddress.ip_network,
+                  api.caching.getDataCached(getBlockedDataSet, entitytypes, blocktype, **kwargs)
+                  )
+    if collapse:
+        prefixes = ipaddress.collapse_addresses(prefixes)
+    return list(map(str, collapse))
+
+

@@ -237,3 +237,51 @@ def getDecisionByOuterID(outer_id, *args):
 
     return _outputQuery(cursor, args)
 
+
+def showFairBlockings():
+
+
+    cursor.execute(
+        '''SELECT blocktype.name AS blocktype,
+            entitytype.name AS entitytype
+        FROM fairness 
+        JOIN blocktype ON blocktype_id = blocktype.id
+        JOIN etitytype ON entitytype_id = entitytype.id
+        '''
+    )
+
+    return _outputQuery(cursor, args)
+
+
+def addFairBlockings(blocktype, entitytype):
+
+
+    cursor.execute(
+        '''INSERT INTO fairness
+        (blocktype_id, entitytype_id)
+        VALUES (
+            (SELECT id FROM blocktype WHERE name = %s)
+            (SELECT id FROM entitytype WHERE name = %s)
+        )
+        RETURNING blocktype_id, entitytype_id
+        ''',
+        (blocktype, entitytype,)
+    )
+    connection.commit()
+
+    return _outputQuery(cursor, args)
+
+
+def showFairBlockings():
+
+
+    cursor.execute(
+        '''SELECT blocktype.name AS blocktype,
+            entitytype.name AS entitytype
+        FROM fairness 
+        JOIN blocktype ON blocktype_id = blocktype.id
+        JOIN etitytype ON entitytype_id = entitytype.id
+        '''
+    )
+
+    return _outputQuery(cursor, args)

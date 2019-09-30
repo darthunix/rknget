@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import cgi
 
-from dbconn import connstr
-
 """
 Provides the data for HTTP Content Sensor
 """

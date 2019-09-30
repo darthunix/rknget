@@ -11,7 +11,8 @@ def testDBConn():
 def getLastExitCode(procname):
     cursor.execute(
         '''SELECT exit_code FROM log
-        WHERE procname = %s
+        WHERE exit_code is not NULL 
+        AND procname = %s
         ORDER BY id DESC LIMIT 1''', (procname,))
     if cursor.rowcount == 0:
         return None

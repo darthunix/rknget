@@ -80,7 +80,7 @@ def main():
                 open(file=config['Global']['dumpPath'], mode='wb').write(dumpFile)
 
         # Parsing dump file
-        logger.info('Parsing dump file...')
+        logger.info('Parsing the dump')
         xmldump = zipfile.ZipFile(io.BytesIO(dumpFile)).read('dump.xml').decode('cp1251')
         # Freeing memory
         del dumpFile

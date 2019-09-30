@@ -17,6 +17,7 @@
     json (для всех программ)
     psycopg2 (web api)
     redis (web api)
+    pickle (Web api)
 
 Установка серверной части:
 0. Prerequisites

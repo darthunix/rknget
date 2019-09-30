@@ -7,7 +7,7 @@ import redis
 
 class WebMainApi:
     """
-    The class for printing CGI data, but hasn't had its procedures implemented.
+    The abstract class for printing CGI data, but hasn't had its procedures implemented.
     """
 
     def _getParamsDict(self):
