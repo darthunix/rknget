@@ -227,14 +227,14 @@ def getFairlyBlockedIPs(collapse=True, ipv6=False):
 # Further stateless blocklists formed
 
 
-def _makeSet(x):
+def _makeUniqList(x):
     if not x:
-        return {}
+        return []
     elif type(x) is str:
-        return {x}
+        return [x]
     elif hasattr(x, '__iter__'):
-        return set(x)
-    return {x}
+        return list(set(x))
+    return [x]
 
 
 def getBlockedDataSet(entitytypes, blocktypes, srcenttys=None, **kwargs):
@@ -246,9 +246,9 @@ def getBlockedDataSet(entitytypes, blocktypes, srcenttys=None, **kwargs):
     :return: set of strings
     """
     return blockdata.getBlockedData(
-        _makeSet(entitytypes),
-        _makeSet(blocktypes),
-        _makeSet(srcenttys))
+        _makeUniqList(entitytypes),
+        _makeUniqList(blocktypes),
+        _makeUniqList(srcenttys))
 
 
 def getBlockedPrefixes(collapse=True, ipv6=False, **kwargs):
