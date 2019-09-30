@@ -18,7 +18,7 @@ def _getCache(key):
 
 def _setCache(key, value):
     if connection:
-        connection.st(key, value)
+        connection.set(key, value)
 
 
 def getDataCached(func, *args, **kwargs):
