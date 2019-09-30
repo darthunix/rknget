@@ -31,9 +31,9 @@ def getDataCached(function, *args, **kwargs):
     """
     key = pickle.dumps(
             [function, args, kwargs])
-    cache = pickle.loads(_getCache(key))
+    cache = _getCache(key)
     if cache:
-        return cache
+        return pickle.loads(cache)
 
     result = function(args, kwargs)
     _setCache(key, pickle.dumps(result))
