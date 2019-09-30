@@ -21,20 +21,20 @@ def _setCache(key, value):
         connection.st(key, value)
 
 
-def getDataCached(function, *args, **kwargs):
+def getDataCached(func, *args, **kwargs):
     """
     Caching decorator
-    :param function: any callable
+    :param func: any callable
     :param args: arguments
     :param kwargs: keyword arguments
     :return: cache hit or function result on miss, with caching
     """
     key = pickle.dumps(
-            [function, args, kwargs])
+            [func, args, kwargs])
     cache = _getCache(key)
     if cache:
         return pickle.loads(cache)
 
-    result = function(args, kwargs)
+    result = func(args, kwargs)
     _setCache(key, pickle.dumps(result))
     return result
