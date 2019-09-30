@@ -268,6 +268,6 @@ def getBlockedPrefixes(collapse=True, ipv6=False, **kwargs):
                   )
     if collapse:
         prefixes = ipaddress.collapse_addresses(prefixes)
-    return list(map(str, collapse))
+    return list(map(str, prefixes))
 
 
