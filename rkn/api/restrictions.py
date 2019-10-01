@@ -271,3 +271,24 @@ def getBlockedPrefixes(collapse=True, ipv6=False, **kwargs):
     return list(map(str, prefixes))
 
 
+def getBlockedDomains(collapse=True, wc_asterize=False, **kwargs):
+    """
+    Brand new procedure. Uses domain tree to cleanup excess domains.
+    :param collapse: merge domains if wildcard analogue exists
+    :param wc_asterize: merge domains if wildcard analogue exists
+    :return: 2 sets: domains and wildcard domains
+    """
+    domains = blockdata.getBlockedResourcesSet('domain')
+    wdomains = blockdata.getBlockedResourcesSet('domain-mask')
+    if not collapse:
+        if wc_asterize:
+            wdomains = map(lambda s: '*.'+s, wdomains)
+        return [list(domains),
+                list(wdomains)]
+    # Building domains tree
+    dnstree = mkdnstree(domains,wdomains)
+    # Coalescing the tree to a list of domain-as-lists
+    # Starting with TLD, not 0LD
+    dnsmap = mapdnstree(dnstree[""])
+    # Making text domains and wdomains again
+    return list( map(list,dnslistmerged(dnsmap, wc_asterize)) )

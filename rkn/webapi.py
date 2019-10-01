@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
+
+# Extended reporting via this module:
+#import cgitb
+
 import cgi
+import os
+
 from webmain import WebMainApi
 
 
@@ -20,6 +26,9 @@ class WebPlainApi(WebMainApi):
     def _getParamsDict(self):
         fields = cgi.FieldStorage()
         return {key: fields.getvalue(key) for key in fields.keys()}
+
+    def _getReqMethod(self):
+        return os.environ['REQUEST_METHOD']
 
     def _printContent(self, data):
         print("Content-Type: text/plain\r\n\r\n" + data)

@@ -1,9 +1,14 @@
+"""
+Caching immplementation with Redis.
+Provides failover, which means no caching
+"""
 import redis
 import pickle
 
-from api.settings import rdbconn
+from api.settings import redisconf
 
-connection = redis.Redis(**rdbconn)
+
+connection = redis.Redis(**redisconf.conn)
 try:
     connection.ping()
 except redis.exceptions.RedisError:
@@ -18,7 +23,7 @@ def _getCache(key):
 
 def _setCache(key, value):
     if connection:
-        connection.set(key, value)
+        connection.set(key, value, ex=redisconf.ttl)
 
 
 def getDataCached(func, *args, **kwargs):
@@ -38,3 +43,7 @@ def getDataCached(func, *args, **kwargs):
     result = func(*args, **kwargs)
     _setCache(key, pickle.dumps(result))
     return result
+
+
+def flushCache():
+    connection.flushall()

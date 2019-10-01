@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
-import sys
-
-import dbconn
-import redis
-
+import api.caching
+from api.settings import apiconf
 
 class WebMainApi:
     """
@@ -11,6 +8,9 @@ class WebMainApi:
     """
 
     def _getParamsDict(self):
+        pass
+
+    def _getReqMethod(self):
         pass
 
     def _printContent(self, data):
@@ -21,43 +21,22 @@ class WebMainApi:
 
     def main(self):
         params = self._getParamsDict()
+        reqmethod = self._getReqMethod()
         fields = params.copy()
         modval = fields.pop('module', None)
         if modval.split('.')[0] != 'api':
             self._printContent('Not an API')
             return 1
         metval = fields.pop('method', None)
-        # Redis part
-        rdb = None
-        rdbvaluekey = None
-        if modval in dbconn.rdb.cache:
-            if dbconn.rdb.conn:
-                rdb = redis.Redis(**dbconn.rdb.conn)
-                try:
-                    # To distinguish different API's results
-                    # Got already formatted result, not source or pickled
-                    rdbvaluekey = __name__ + ''.join(sorted(map(str, list(params.keys()) + list(params.values()))))
-                    data = rdb.get(rdbvaluekey)
-                    if data:
-                        self._printContent(data)
-                        return 0
-                except redis.TimeoutError:
-                    rdb = None
-                except redis.exceptions.ConnectionError:
-                    rdb = None
 
         # Shoot your leg through!!!
         module = __import__(modval, fromlist=[metval])
-        data = self._formatContent(getattr(module, metval)(**fields))
+        if reqmethod == 'GET' \
+            and modval in apiconf.cacheable:
+            data = api.caching.getDataCached(
+                getattr(module, metval), **fields)
+        else:
+            data = getattr(module, metval)(**fields)
 
-        # Redis part
-        if rdb:
-            try:
-                rdb.set(rdbvaluekey, data, ex=dbconn.rdb.ex)
-            except redis.TimeoutError:
-                pass
-            except redis.exceptions.ConnectionError:
-                pass
-
-        self._printContent(data)
+        self._printContent(self._formatContent(data))
         return 0
