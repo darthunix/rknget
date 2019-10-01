@@ -251,7 +251,7 @@ def getBlockedDataSet(entitytypes, blocktypes, srcenttys=None, **kwargs):
         _makeUniqList(srcenttys))
 
 
-def getBlockedPrefixes(collapse=True, ipv6=False, **kwargs):
+def getBlockedPrefixes(collapse=False, ipv6=False, **kwargs):
     """
     Converts objects to text.
     :param collapse: merge and minimize IPs and networks
@@ -264,14 +264,18 @@ def getBlockedPrefixes(collapse=True, ipv6=False, **kwargs):
     else:
         entitytypes = ['ip', 'ipsubnet']
     prefixes = map(ipaddress.ip_network,
-                  api.caching.getDataCached(getBlockedDataSet, entitytypes, blocktype, **kwargs)
+                  api.caching.getDataCached(
+                      getBlockedDataSet,
+                      entitytypes,
+                      blocktype,
+                      **kwargs)
                   )
     if collapse:
         prefixes = ipaddress.collapse_addresses(prefixes)
     return list(map(str, prefixes))
 
 
-def getBlockedDomains(collapse=True, wc_asterize=False, **kwargs):
+def getBlockedDomains(collapse=False, wc_asterize=False, **kwargs):
     """
     Brand new procedure. Uses domain tree to cleanup excess domains.
     :param collapse: merge domains if wildcard analogue exists

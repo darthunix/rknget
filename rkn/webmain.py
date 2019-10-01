@@ -33,6 +33,7 @@ class WebMainApi:
         module = __import__(modval, fromlist=[metval])
         if reqmethod == 'GET' \
             and modval in apiconf.cacheable:
+            # Trying to use cache
             data = api.caching.getDataCached(
                 getattr(module, metval), **fields)
         else:

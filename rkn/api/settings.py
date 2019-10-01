@@ -6,7 +6,7 @@ class redisconf:
         'socket_connect_timeout': 2,
         'password': 'bir6aepheo8eilohBo6NaarooTh6eeghooch3xaeCeecohnoo8gain9avu0phaiw'
     }
-    ttl = 1200
+    ttl = 3540
 
 # Don't need this with pickle
 #    'encoding': 'utf8',
