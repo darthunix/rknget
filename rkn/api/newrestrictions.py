@@ -84,12 +84,12 @@ def getBlockedDomains(collapse=False, wc_asterize=False, **kwargs):
                 list(wdomains)]
 
     # Building domains tree
-    dnstree = restrutils.mkdnstree(domains,wdomains)
+    dnstree = api.restrutils.mkdnstree(domains,wdomains)
     # Coalescing the tree to a list of domain-as-lists
     # Starting with TLD, not 0LD
-    dnsmap = restrutils.mapdnstree(dnstree[""])
+    dnsmap = api.restrutils.mapdnstree(dnstree[""])
     # Making text domains and wdomains again
-    return list( map(list,restrutils.dnslistmerged(dnsmap, wc_asterize)) )
+    return list( map(list, api.restrutils.dnslistmerged(dnsmap, wc_asterize)) )
 
 
 def getBlockedDNS(collapse=False, **kwargs):
@@ -194,7 +194,7 @@ def getBlockedHTTP(proto=False, **kwargs):
     if not proto:
         return list(urlset)
     else:
-        return [restrutils.strcut(u,'http://') for u in urlset]
+        return [api.restrutils.strcut(u,'http://') for u in urlset]
 
 
 def getBlockedHTTPS(proto=False, **kwargs):
@@ -209,7 +209,7 @@ def getBlockedHTTPS(proto=False, **kwargs):
     if not proto:
         return list(urlset)
     else:
-        return [restrutils.strcut(u,'https://') for u in urlset]
+        return [api.restrutils.strcut(u,'https://') for u in urlset]
 
 
 def getBlockedURLs(proto=False, **kwargs):
