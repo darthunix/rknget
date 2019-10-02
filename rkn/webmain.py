@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import api.caching
-from api.settings import apiconf
+from settings import apiconf
 
 class WebMainApi:
     """

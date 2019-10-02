@@ -11,9 +11,3 @@ class redisconf:
 # Don't need this with pickle
 #    'encoding': 'utf8',
 #    'decode_responses': 'utf8',
-
-
-class apiconf:
-    cacheable = {
-        'api.restrictions'
-    }
