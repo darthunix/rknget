@@ -60,7 +60,7 @@ def main():
             update_ts = max(dumpDate['lastDumpDate'],
                               dumpDate['lastDumpDateUrgently'])/1000
             # Last parsed dump lag in seconds
-            dump_lag = dumpparse.getDumpLag()
+            dump_lag = monitoring.getDumpLag()
             # Now
             ts_now = utils.getUnixTS(config['Global']['tzoffset'])
             if ts_now - update_ts > dump_lag:
