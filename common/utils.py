@@ -83,5 +83,5 @@ def getUnixTS(tz):
     :return: Current unix timestamp
     """
     if not tz:
-        return datetime.now(timezone(timedelta(3))).timestamp()
-    return datetime.now(timezone(timedelta(tz))).timestamp()
+        return datetime.now(timezone(timedelta(hours=3))).timestamp()
+    return datetime.now(timezone(timedelta(hours=tz))).timestamp()
