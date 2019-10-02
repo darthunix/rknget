@@ -51,14 +51,16 @@ def main():
             if not dumpDate:
                 raise Exception('Couldn\'t obtain dumpdates info', errno=2)
 
-            update_time = max(dumpDate['lastDumpDate'],
-                              dumpDate['lastDumpDateUrgently'])/1000
-            parsed_recently = webconn.call(module='api.dumpparse',
-                                           method='parsedRecently',
-                                           update_time=update_time,
-                                           **config['API'])
-
-            if parsed_recently:
+            # Loaded dump unix timestamp in seconds
+            update_ts = max(dumpDate['lastDumpDate'],
+                            dumpDate['lastDumpDateUrgently'])/1000
+            # Last parsed dump lag in seconds
+            dump_lag = webconn.call(module='api.monitoring',
+                                    method='getDumpLag',
+                                    **config['API'])
+            # Now
+            ts_now = utils.getUnixTS(config['Global']['tzoffset'])
+            if ts_now - update_ts > dump_lag:
                 result = 'The latest dump is relevant'
                 logger.info(result)
                 # Updating the state in database

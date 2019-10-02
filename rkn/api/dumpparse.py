@@ -18,18 +18,6 @@ class RKNDumpFormatException(BaseException):
 #        self.errors = errors
 
 
-def parsedRecently(update_time):
-    """
-    Checks if dump info becomes obsolete
-    :param update_time: dump update time in seconds
-    :return:
-    """
-    parsed_time = dataprocessing.getLastParsedTime()
-    if parsed_time:
-        return parsed_time.timestamp() > float(update_time)
-    return False
-
-
 def parse(xmldump):
     """
     :param xmldump: dump.xml

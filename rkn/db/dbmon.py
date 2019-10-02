@@ -1,5 +1,4 @@
 from db.dbconn import connection
-from datetime import datetime
 
 cursor = connection.cursor()
 
@@ -19,9 +18,25 @@ def getLastExitCode(procname):
     return cursor.fetchone()['exit_code']
 
 
-def getDumpLagSec():
+def getLastDumpTime():
+    """
+    Returns the last successfull time when dump was parsed.
+    :return: datetime value
+    """
     cursor.execute('SELECT update_time FROM dumpinfo WHERE parsed = True '
                    'ORDER BY id DESC LIMIT 1')
     if cursor.rowcount == 0:
         return None
-    return (datetime.now().astimezone() - cursor.fetchone()['update_time']).total_seconds()
+    return cursor.fetchone()['update_time']
+
+
+def getLastParsedTime():
+    """
+    Returns the last successfull time when dump was parsed.
+    :return: datetime value
+    """
+    cursor.execute('SELECT parse_time FROM dumpinfo WHERE parsed = True '
+                   'ORDER BY id DESC LIMIT 1')
+    if cursor.rowcount == 0:
+        return None
+    return cursor.fetchone()['parse_time']

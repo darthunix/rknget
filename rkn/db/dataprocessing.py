@@ -1,6 +1,5 @@
 from db.dbconn import connection
 from datetime import datetime
-from psycopg2 import sql
 
 cursor = connection.cursor()
 connection.autocommit = False
@@ -9,19 +8,6 @@ connection.autocommit = False
 def commitChanges():
     # Force committing after long transaction
     connection.commit()
-
-
-def getLastParsedTime():
-    """
-    Returns the last dump state. If no entries, empty dict.
-    :return: datetime value
-    """
-    cursor.execute(
-        '''SELECT parse_time FROM dumpinfo
-        WHERE parsed = True
-        ORDER BY id DESC LIMIT 1'''
-    )
-    return cursor.fetchone()['parse_time']
 
 
 def addDumpInfoRecord(updateTime, updateTimeUrgently, **kwargs):

@@ -2,6 +2,7 @@ from db import dbmon
 
 from api.restrictions import getBlockedIPList
 import ipaddress
+from datetime import datetime
 
 """
 This module provides API for monitoring
@@ -43,7 +44,20 @@ def getBlockedSubnetsCount(collapse=False, ipv6=False):
 
 
 def getDumpLag():
-    ts = dbmon.getDumpLagSec()
-    if ts is None:
+    """
+    :return: Dump lag in seconds
+    """
+    last = dbmon.getLastDumpTime()
+    if last is None:
         return -1
-    return ts
+    return round((datetime.now().astimezone() - last).total_seconds())
+
+
+def getDumpParseLag():
+    """
+    :return: Parse lag in seconds
+    """
+    last = dbmon.getLastParsedTime()
+    if last is None:
+        return -1
+    return round((datetime.now().astimezone() - last).total_seconds())

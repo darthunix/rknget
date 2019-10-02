@@ -15,7 +15,7 @@ import zipfile
 
 sys.path.append('../')
 sys.path.append('../rkn')
-from api import dumpparse, blocking, procutils
+from api import dumpparse, blocking, procutils, monitoring
 import rknsoapwrapper
 from common import utils
 
@@ -56,12 +56,14 @@ def main():
             dumpDate = rknSW.getLastDumpDateEx()
             if not dumpDate:
                 raise Exception('Couldn\'t obtain dumpdates info', errno=2)
-            update_time = max(dumpDate['lastDumpDate'],
+            # Loaded dump unix timestamp in seconds
+            update_ts = max(dumpDate['lastDumpDate'],
                               dumpDate['lastDumpDateUrgently'])/1000
-
-            parsed_recently =  dumpparse.parsedRecently(update_time)
-
-            if parsed_recently:
+            # Last parsed dump lag in seconds
+            dump_lag = dumpparse.getDumpLag()
+            # Now
+            ts_now = utils.getUnixTS(config['Global']['tzoffset'])
+            if ts_now - update_ts > dump_lag:
                 result = 'Last dump is relevant'
                 logger.info(result)
                 # Updating the state in database
