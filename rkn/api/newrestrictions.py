@@ -203,8 +203,8 @@ def getBlockedHTTPS(proto=False, **kwargs):
     """
     urlset = api.caching.getDataCached(
         getBlockedDataSet,
-        'default',
         'https',
+        'default',
         **kwargs)
     if not proto:
         return list(urlset)

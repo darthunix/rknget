@@ -1,5 +1,5 @@
 class apiconf:
     cacheable = {
-        'api.restrictions'
+        'api.restrictions',
         'api.newrestrictions'
     }
