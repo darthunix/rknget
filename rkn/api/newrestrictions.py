@@ -182,22 +182,22 @@ def getBlockedIPSubnets(ipv6=False, **kwargs):
     return list(map(str, prefixes))
 
 
-def getBlockedHTTP(proto=False, **kwargs):
+def getBlockedHTTP(cutproto=False, **kwargs):
     """
     :return URLs strings list
     """
     urlset = api.caching.getDataCached(
         getBlockedDataSet,
-        'default',
         'http',
+        'default',
         **kwargs)
-    if not proto:
+    if not cutproto:
         return list(urlset)
     else:
         return [api.restrutils.strcut(u,'http://') for u in urlset]
 
 
-def getBlockedHTTPS(proto=False, **kwargs):
+def getBlockedHTTPS(cutproto=False, **kwargs):
     """
     :return SSL URLs strings list
     """
@@ -206,13 +206,13 @@ def getBlockedHTTPS(proto=False, **kwargs):
         'https',
         'default',
         **kwargs)
-    if not proto:
+    if not cutproto:
         return list(urlset)
     else:
         return [api.restrutils.strcut(u,'https://') for u in urlset]
 
 
-def getBlockedURLs(proto=False, **kwargs):
+def getBlockedURLs(cutproto=False, **kwargs):
     """
     :param proto: Cuts protocol, so that merges the same
     :return: All URLs, either http or https
@@ -221,11 +221,11 @@ def getBlockedURLs(proto=False, **kwargs):
     return(list(set.union(
         set(api.caching.getDataCached(
             getBlockedHTTP,
-            proto=proto,
+            cutproto=cutproto,
             **kwargs)),
         set(api.caching.getDataCached(
             getBlockedHTTPS,
-            proto=proto,
+            cutproto=cutproto,
             ** kwargs))
     )))
 
