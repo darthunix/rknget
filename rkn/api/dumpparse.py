@@ -2,7 +2,7 @@ import xml.etree.ElementTree
 
 from datetime import datetime
 
-from api import parseutils
+from api import parseutils, caching
 from db import dataprocessing
 
 
@@ -16,6 +16,11 @@ class RKNDumpFormatException(BaseException):
 #        super().__init__(message)
 #        # Now for your custom code...
 #        self.errors = errors
+
+
+def updateDumpCheckTime():
+    dataprocessing.updateContentPresence()
+    return True
 
 
 def parse(xmldump):
@@ -125,5 +130,7 @@ def parse(xmldump):
     dataprocessing.setDumpParsed(dump_id)
 
     dataprocessing.commitChanges()
+
+    caching.flushCache()
 
     return True

@@ -64,6 +64,10 @@ def main():
                 result = 'The latest dump is relevant'
                 logger.info(result)
                 # Updating the state in database
+                webconn.call(module='api.dumpparse',
+                             method='updateDumpCheckTime',
+                             **config['API'])
+                # Finalising
                 webconn.call(module='api.procutils',
                              method='finishJob',
                              log_id=log_id,

@@ -53,11 +53,11 @@ def getDumpLag():
     return round((datetime.now().astimezone() - last).total_seconds())
 
 
-def getDumpParseLag():
+def getDumpCheckLag():
     """
     :return: Parse lag in seconds
     """
-    last = dbmon.getLastParsedTime()
+    last = dbmon.getLastCheckTime()
     if last is None:
         return -1
     return round((datetime.now().astimezone() - last).total_seconds())

@@ -30,13 +30,13 @@ def getLastDumpTime():
     return cursor.fetchone()['update_time']
 
 
-def getLastParsedTime():
+def getLastCheckTime():
     """
     Returns the last successfull time when dump was parsed.
     :return: datetime value
     """
-    cursor.execute('SELECT parse_time FROM dumpinfo WHERE parsed = True '
+    cursor.execute('SELECT check_time FROM dumpinfo WHERE parsed = True '
                    'ORDER BY id DESC LIMIT 1')
     if cursor.rowcount == 0:
         return None
-    return cursor.fetchone()['parse_time']
+    return cursor.fetchone()['check_time']

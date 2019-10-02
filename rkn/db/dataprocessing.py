@@ -15,14 +15,14 @@ def addDumpInfoRecord(updateTime, updateTimeUrgently, **kwargs):
     The arguments were named corresponding with
     <reg> tag attributes to simplify kwargs passthrough
     """
+    now = datetime.now().astimezone()
     cursor.execute(
         '''INSERT INTO dumpinfo 
-        (update_time, update_time_urgently, parse_time, parsed)
-        VALUES (%s, %s, %s, %s) RETURNING id''',
-        (updateTime, updateTimeUrgently, datetime.now().astimezone(), False)
+        (update_time, update_time_urgently, parse_time, check_time, parsed)
+        VALUES (%s, %s, %s, %s, %s) RETURNING id''',
+        (updateTime, updateTimeUrgently, now, now, False)
     )
     connection.commit()
-
     return cursor.fetchone()['id']
 
 
@@ -34,7 +34,18 @@ def setDumpParsed(dump_id):
         (dump_id,)
     )
     connection.commit()
+    return True
 
+
+def updateDumpCheckTime():
+    now = datetime.now().astimezone()
+    cursor.execute(
+        '''UPDATE dumpinfo SET check_time = %s
+        WHERE id = (SELECT MAX(id) FROM dumpinfo)
+        AND parsed is True
+        ''', (now,)
+    )
+    connection.commit()
     return True
 
 
