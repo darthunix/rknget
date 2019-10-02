@@ -31,13 +31,15 @@ class WebMainApi:
 
         # Shoot your leg through!!!
         module = __import__(modval, fromlist=[metval])
-        if reqmethod == 'GET' \
-            and modval in apiconf.cacheable:
+        if modval in apiconf.cacheable:
             # Trying to use cache
             data = api.caching.getDataCached(
                 getattr(module, metval), **fields)
         else:
-            data = getattr(module, metval)(**fields)
+            if reqmethod == 'GET':
+                data = ''
+            else:
+                data = getattr(module, metval)(**fields)
 
         self._printContent(self._formatContent(data))
         return 0

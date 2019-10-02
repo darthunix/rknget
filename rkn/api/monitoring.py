@@ -37,7 +37,7 @@ def getBlockedIPCount(ipv6=False):
     return ipNum
 
 
-def getBlockedSubnetsCount(collapse=True, ipv6=False):
+def getBlockedSubnetsCount(collapse=False, ipv6=False):
     return len(getBlockedIPList(collapse=collapse,
                                 ipv6=ipv6))
 

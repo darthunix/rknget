@@ -24,4 +24,4 @@ def getDumpLagSec():
                    'ORDER BY id DESC LIMIT 1')
     if cursor.rowcount == 0:
         return None
-    return (datetime.now().astimezone() - cursor.fetchone()['update_time']).seconds
+    return (datetime.now().astimezone() - cursor.fetchone()['update_time']).total_seconds()
