@@ -88,12 +88,12 @@ def getBlockedDomains(collapse=True, wc_asterize=False):
         return [list(domains),
                 list(wdomains)]
     # Building domains tree
-    dnstree = restrutils.mkdnstree(domains,wdomains)
+    dnstree = api.restrutils.mkdnstree(domains,wdomains)
     # Coalescing the tree to a list of domain-as-lists
     # Starting with TLD, not 0LD
-    dnsmap = restrutils.mapdnstree(dnstree[""])
+    dnsmap = api.restrutils.mapdnstree(dnstree[""])
     # Making text domains and wdomains again
-    return list( map(list,restrutils.dnslistmerged(dnsmap, wc_asterize)) )
+    return list( map(list,api.restrutils.dnslistmerged(dnsmap, wc_asterize)) )
 
 
 def getBlockedDNS(collapse=True):
