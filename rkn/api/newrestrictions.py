@@ -3,7 +3,7 @@ from db import blockdata
 import ipaddress
 import api.caching
 
-import restrutils
+import api.restrutils
 
 """
 This module only operates with Resources data

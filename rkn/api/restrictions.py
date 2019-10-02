@@ -2,7 +2,7 @@ from db import blockdata
 
 import ipaddress
 
-import restrutils
+import api.restrutils
 
 """
 This module only operates with Resources data
