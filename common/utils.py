@@ -5,7 +5,6 @@ import logging
 import sys
 import yaml
 import os
-from datetime import datetime, timezone, timedelta
 
 
 def initLog(logpath='log.log', stdoutlvl='DEBUG', logfilelvl='INFO', **kwargs):
@@ -75,10 +74,3 @@ def createFolders(*args):
             os.makedirs(path, mode=0o755, exist_ok=True)
         finally:
             pass
-
-
-def getUnixTS():
-    """
-    :return: Current unix timestamp
-    """
-    return datetime.now().timestamp()

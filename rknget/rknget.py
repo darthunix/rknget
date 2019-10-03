@@ -55,12 +55,11 @@ def main():
             update_ts = max(dumpDate['lastDumpDate'],
                             dumpDate['lastDumpDateUrgently'])/1000
             # Last parsed dump lag in seconds
-            dump_lag = webconn.call(module='api.monitoring',
-                                    method='getDumpLag',
-                                    **config['API'])
-            # Now
-            ts_now = utils.getUnixTS()
-            if ts_now - update_ts > dump_lag:
+            dump_ts = webconn.call(module='api.monitoring',
+                                   method='getLastDumpTS',
+                                   **config['API'])
+
+            if update_ts > dump_ts:
                 result = 'The latest dump is relevant'
                 logger.info(result)
                 # Updating the state in database

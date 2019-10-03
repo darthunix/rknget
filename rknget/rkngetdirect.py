@@ -58,12 +58,11 @@ def main():
                 raise Exception('Couldn\'t obtain dumpdates info', errno=2)
             # Loaded dump unix timestamp in seconds
             update_ts = max(dumpDate['lastDumpDate'],
-                              dumpDate['lastDumpDateUrgently'])/1000
+                            dumpDate['lastDumpDateUrgently'])/1000
             # Last parsed dump lag in seconds
-            dump_lag = monitoring.getDumpLag()
-            # Now
-            ts_now = utils.getUnixTS()
-            if ts_now - update_ts > dump_lag:
+            dump_ts = monitoring.getLastDumpTS()
+
+            if update_ts > dump_ts:
                 result = 'Last dump is relevant'
                 logger.info(result)
                 dumpparse.updateDumpCheckTime()

@@ -72,3 +72,13 @@ def getDumpCheckLag():
     if last is None:
         return -1
     return round((datetime.now().astimezone() - last).total_seconds())
+
+
+def getLastDumpTS():
+    """
+    :return: Dump unix timestamp in seconds
+    """
+    last = dbmon.getLastDumpTime()
+    if last is None:
+        return -1
+    return round(last.total_seconds())
