@@ -2,6 +2,8 @@ from db.dbconn import connection
 from datetime import datetime
 from psycopg2 import sql
 
+from db.dataprocessing import addResource
+
 cursor = connection.cursor()
 
 UNLOCK_EXIT_CODE=255
@@ -33,53 +35,67 @@ def _outputQuery(cursor, columns=None):
            [[row[c] for c in columns] for row in cursor]
 
 
-def addCustomResource(entitytype, value):
+def addCustomResource(entitytype, value, is_banned=False):
     """
     Adds custom resource to the table.
     :return: new or existing resource ID
     """
+    now = datetime.now().astimezone()
     cursor.execute(
-        '''SELECT id FROM resource
-        WHERE is_custom = True
+        '''SELECT resource.id FROM resource
+        JOIN entitytype ON resource.entitytype_id = entitytype.id 
+        WHERE is_banned IS NOT NULL
+        AND entitytype.name = %s
         AND value=%s
-        ''', (value,)
+        ''', (entitytype, value,)
     )
-    # If exists, finish with returning ID
+    # If exists, banning/unbanning with returning IDs
     if cursor.rowcount > 0:
-        return cursor.fetchone()['id']
-
-    cursor.execute(
-        '''INSERT INTO resource (content_id, last_change, value, is_custom, entitytype_id)
-        VALUES (%s,%s,%s,%s, (SELECT id FROM entitytype WHERE name = %s) )
-        RETURNING id
-        ''', (None, datetime.now().astimezone(), value, True, entitytype)
+        ids = [c['id'] for c in cursor]
+        cursor.execute('''
+            UPDATE resource
+            SET is_banned = %s, last_change = %s
+            WHERE ID=ANY(%s)
+            ''', (is_banned, now, ids,)
+                       )
+        connection.commit()
+        return ids
+    # If nothing found
+    return addResource(
+        content_id=None,
+        entitytype=entitytype,
+        value=value,
+        is_banned=is_banned,
+        last_change=now,
+        atomic=True
     )
-    connection.commit()
-    return cursor.fetchone()['id']
 
 
 def delCustomResource(entitytype, value):
     """
     Deletes custom resource from the table.
-    :return: Count of deleted rows (ideally strictly 1)
+    :return: row ID or None
     """
     cursor.execute(
         '''DELETE FROM resource
-        WHERE is_custom = True
+        WHERE is_banned IS NOT NULL
         AND value = %s
         AND entitytype_id = (SELECT id FROM entitytype WHERE name = %s)
+        RETURNING id
         ''', (value,entitytype,)
     )
     connection.commit()
 
-    return int(cursor.statusmessage.split(' ')[1])
+    if cursor.rowcount > 0:
+        return cursor.fetchone()['id']
+    return None
 
 
 def findResource(value=None, entitytype=None, content_id=None, *args):
 
     query = sql.SQL('''SELECT
-    resource.id, content.outer_id, entitytype.name as entitytype,
-    blocktype.name as blocktype, resource.is_custom, resource.is_blocked,
+    resource.id, content.outer_id, content.in_dump, entitytype.name as entitytype,
+    blocktype.name as blocktype, resource.is_banned,
     resource.value
     FROM resource
         LEFT JOIN content on resource.content_id = content.id
@@ -129,14 +145,15 @@ def getResourceByContentID(content_id, *args):
         return findResource(content_id=content_id)
 
 
-def getBlockCounters():
+def getDumpCounters():
 
     cursor.execute(
         '''SELECT entitytype.name, count(1) AS sum
         FROM resource 
         JOIN entitytype ON resource.entitytype_id = entitytype.id
-        GROUP BY entitytype.id, is_blocked
-        HAVING is_blocked=True'''
+        JOIN content ON resource.content_id = content.id
+        GROUP BY entitytype.id, content.in_dump
+        HAVING in_dump=True'''
     )
 
     return _outputQuery(cursor)
@@ -237,51 +254,3 @@ def getDecisionByOuterID(outer_id, *args):
 
     return _outputQuery(cursor, args)
 
-
-def showFairBlockings():
-
-
-    cursor.execute(
-        '''SELECT blocktype.name AS blocktype,
-            entitytype.name AS entitytype
-        FROM fairness 
-        JOIN blocktype ON blocktype_id = blocktype.id
-        JOIN etitytype ON entitytype_id = entitytype.id
-        '''
-    )
-
-    return _outputQuery(cursor, args)
-
-
-def addFairBlockings(blocktype, entitytype):
-
-
-    cursor.execute(
-        '''INSERT INTO fairness
-        (blocktype_id, entitytype_id)
-        VALUES (
-            (SELECT id FROM blocktype WHERE name = %s)
-            (SELECT id FROM entitytype WHERE name = %s)
-        )
-        RETURNING blocktype_id, entitytype_id
-        ''',
-        (blocktype, entitytype,)
-    )
-    connection.commit()
-
-    return _outputQuery(cursor, args)
-
-
-def showFairBlockings():
-
-
-    cursor.execute(
-        '''SELECT blocktype.name AS blocktype,
-            entitytype.name AS entitytype
-        FROM fairness 
-        JOIN blocktype ON blocktype_id = blocktype.id
-        JOIN etitytype ON entitytype_id = entitytype.id
-        '''
-    )
-
-    return _outputQuery(cursor, args)

@@ -30,9 +30,13 @@ def _dbAsText(headers, rows):
     return '\n'.join(result)
 
 
-def addCustomResource(entitytype, value, **kwargs):
+def _addCustomResource(entitytype, value, is_banned=False, **kwargs):
     """
     Adds custom resource to the database's Resource table.
+    :param entitytype: Entity type
+    :param value: Resource
+    :param is_banned: False for whitelist, True for blacklist,
+    None is undesirable, but affects to nothing
     :return: row ID or None for erroneous entitytype
     """
     try:
@@ -41,31 +45,40 @@ def addCustomResource(entitytype, value, **kwargs):
     except KeyError:
         # No checks for this entity type
         return 'Entitytype error'
-    try:
-        return(
-            dbops.addCustomResource(
-                entitytype=entitytype,
-                value=value,
-            )
+    return(
+        dbops.addCustomResource(
+            entitytype=entitytype,
+            value=value,
+            is_banned=is_banned
         )
-    except KeyError:
-        return "Entity type error"
+    )
+
+
+def banResource(entitytype, value, **kwargs):
+    return _addCustomResource(
+        entitytype=entitytype,
+        value=value,
+        is_banned=True,
+        **kwargs)
+
+
+def unbanResource(entitytype, value, **kwargs):
+    return _addCustomResource(
+        entitytype=entitytype,
+        value=value,
+        is_banned=False,
+        **kwargs)
 
 
 def delCustomResource(entitytype, value, **kwargs):
     """
     Deletes custom resource to the database's Resource table.
-    :return: True if deleted, False otherwise
+    :return: row ID if deleted, 0 otherwise
     """
-    try:
-        return(
-            dbops.delCustomResource(
-                entitytype=entitytype,
-                value=value,
-            )
+    return dbops.delCustomResource(
+        entitytype=entitytype,
+        value=value
         )
-    except KeyError:
-        return "Entity type error"
 
 
 def findResource(value, entitytype=None, **kwargs):
@@ -95,7 +108,7 @@ def getContent(outer_id, **kwargs):
 
 
 def showDumpStats(**kwargs):
-    return _dbAsText(*dbops.getBlockCounters())
+    return _dbAsText(*dbops.getDumpCounters())
 
 
 def showDumpInfo(**kwargs):

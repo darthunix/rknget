@@ -178,7 +178,7 @@ def updateContentPresence(dump_id, disabledIDList=[]):
     connection.commit()
     return True
 
-def addResource(content_id, entitytype, value, is_custom=False, last_change=None, atomic=False):
+def addResource(content_id, entitytype, value, is_banned=None, last_change=None, atomic=False):
     """
     Not atomic
     Adds resource to the table
@@ -187,14 +187,14 @@ def addResource(content_id, entitytype, value, is_custom=False, last_change=None
 
     cursor.execute(
         '''INSERT INTO resource
-        (content_id, last_change, entitytype_id, value, is_custom)
+        (content_id, last_change, entitytype_id, value, is_banned)
         VALUES (%s, %s,
         (SELECT id FROM entitytype WHERE name = %s), 
         %s, %s)
         RETURNING id
         ''', (content_id, last_change,
               entitytype,
-              value, is_custom,)
+              value, is_banned,)
     )
 
     if atomic:

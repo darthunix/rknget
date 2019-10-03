@@ -19,11 +19,17 @@ CLI_DICT = {
                            'func': 'showDumpStats',
                            }
                  },
-    'resource': {'add': {'args': ['entitytype', 'value'],
-                         'func': 'addCustomResource'
+    'resource': {'ban': {'args': ['entitytype', 'value'],
+                         'func': 'banResource',
+                         'help': 'Adds resource to the blacklist'
                          },
+                 'unban': {'args': ['entitytype', 'value'],
+                          'func': 'unbanResource',
+                         'help': 'Adds resource to the whitelist'
+                          },
                  'del': {'args': ['entitytype', 'value'],
-                         'func': 'delCustomResource'
+                         'func': 'delCustomResource',
+                         'help': 'Removes custom resource'
                          },
                  'find': {'args': ['entitytype', 'value', '...'],
                           'func': 'findResource',
