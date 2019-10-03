@@ -7,11 +7,10 @@ it works directly with the database using API modules.
 """
 
 import sys
-import yaml
-import logging
 import os
 import io
 import zipfile
+from datetime import datetime
 
 sys.path.append('../')
 sys.path.append('../rkn')
@@ -59,8 +58,14 @@ def main():
             # Loaded dump unix timestamp in seconds
             update_ts = max(dumpDate['lastDumpDate'],
                             dumpDate['lastDumpDateUrgently'])/1000
+            logger.debug('Latest dump timestamp is: ' +
+                         str(datetime.fromtimestamp(update_ts))
+                         )
             # Last parsed dump lag in seconds
             dump_ts = monitoring.getLastDumpTS()
+            logger.debug('Parsed dump timestamp is: ' +
+                         str(datetime.fromtimestamp(dump_ts))
+                         )
             # 5 seconds rule
             if update_ts + 5 > dump_ts:
                 result = 'Last dump is relevant'

@@ -4,6 +4,7 @@ import sys
 import os
 import io
 import zipfile
+from datetime import datetime
 
 import rknsoapwrapper
 sys.path.append('../')
@@ -54,10 +55,16 @@ def main():
             # Loaded dump unix timestamp in seconds
             update_ts = max(dumpDate['lastDumpDate'],
                             dumpDate['lastDumpDateUrgently'])/1000
+            logger.debug('Latest dump timestamp is: ' +
+                         str(datetime.fromtimestamp(update_ts))
+                         )
             # Last parsed dump lag in seconds
             dump_ts = webconn.call(module='api.monitoring',
                                    method='getLastDumpTS',
                                    **config['API'])
+            logger.debug('Parsed dump timestamp is: ' +
+                         str(datetime.fromtimestamp(dump_ts))
+                         )
             # 5 seconds rule
             if update_ts + 5 > dump_ts:
                 result = 'The latest dump is relevant'
