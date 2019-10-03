@@ -46,4 +46,5 @@ def getDataCached(func, *args, **kwargs):
 
 
 def flushCache():
-    connection.flushall()
+    if connection:
+        connection.flushall()
