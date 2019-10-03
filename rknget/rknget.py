@@ -66,7 +66,7 @@ def main():
                          str(datetime.fromtimestamp(dump_ts))
                          )
             # 5 seconds rule
-            if update_ts + 5 > dump_ts:
+            if update_ts < dump_ts + 5:
                 result = 'The latest dump is relevant'
                 logger.info(result)
                 # Updating the state in database
