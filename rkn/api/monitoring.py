@@ -1,6 +1,7 @@
 from db import dbmon
 
-from api.restrictions import getBlockedIPList
+import api.restrictions
+import api.caching
 import ipaddress
 from datetime import datetime
 
@@ -23,7 +24,7 @@ def testConn(**kwargs):
         return 1
 
 
-def getLastExitCode(procname, **kwargs):
+def getLastExitCode(procname):
     exit_code = dbmon.getLastExitCode(procname)
     if exit_code is None:
         """Eleven english gentlemen are raping the german women..."""
@@ -32,15 +33,25 @@ def getLastExitCode(procname, **kwargs):
     return exit_code
 
 
-def getBlockedIPCount(ipv6=False):
-    ipsall = getBlockedIPList(collapse=True, ipv6=ipv6)
-    ipNum = sum(map(lambda x: x.num_addresses, ipsall))
-    return ipNum
+def getBlockedIPCount(ipv6=False, **kwargs):
+    prefixes = map(ipaddress.ip_network,
+                  api.caching.getDataCached(
+                      api.restrictions.getBlockedPrefixes,
+                      collapse=True,
+                      ipv6=ipv6,
+                      **kwargs)
+                  )
+    return sum(map(lambda x: x.num_addresses, prefixes))
 
 
-def getBlockedSubnetsCount(collapse=False, ipv6=False):
-    return len(getBlockedIPList(collapse=collapse,
-                                ipv6=ipv6))
+def getBlockedSubnetsCount(collapse=False, ipv6=False, **kwargs):
+    prefixes = api.caching.getDataCached(
+                   api.restrictions.getBlockedPrefixes,
+                   collapse=collapse,
+                   ipv6=ipv6,
+                   **kwargs)
+
+    return len(prefixes)
 
 
 def getDumpLag():
