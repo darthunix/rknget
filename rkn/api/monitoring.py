@@ -81,4 +81,4 @@ def getLastDumpTS():
     last = dbmon.getLastDumpTime()
     if last is None:
         return -1
-    return round(last.total_seconds())
+    return round(last.timestamp())
