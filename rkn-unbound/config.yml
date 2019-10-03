@@ -22,3 +22,5 @@ Logging:
   stdoutlvl: DEBUG
   logfilelvl: INFO
 
+Extra:
+  - https
