@@ -66,7 +66,7 @@ def main():
             if ts_now - update_ts > dump_lag:
                 result = 'Last dump is relevant'
                 logger.info(result)
-                # Updating the state in database
+                dumpparse.updateDumpCheckTime()
                 procutils.finishJob(log_id, 0, result)
                 return 0
 
