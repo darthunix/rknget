@@ -99,56 +99,10 @@ def main():
             raise Exception('Dump hasn\'t been parsed', errno=3)
         # Freeing memory
         del xmldump
-        logger.info('Dump have been parsed to database successfully')
-
-        # Blocking
-        rowsdict = dict()
-        # It may slow down but is safe
-        webconn.call(module='api.blocking',
-                     method='unblockResources',
-                     **config['API'])
-        # Fairly blocking first
-        logger.debug('Blocking fairly (as is)')
-        rows = webconn.call(module='api.blocking',
-                            method='blockResourcesFairly',
-                            **config['API'])
-        rowsdict['fairly'] = rows
-        logger.info('Blocked fairly ' + str(rows) + ' rows')
-        for src, dst in config['Blocking']:
-            logger.info('Blocking ' + str(dst) + ' from ' + str(src))
-            rows = webconn.call(module='api.blocking',
-                                method='blockResourcesExcessively',
-                                src_entity=src,
-                                dst_entity=dst,
-                                **config['API'])
-            if rows is not None:
-                logger.info('Blocked ' + str(rows) + ' rows')
-                rowsdict[str(dst) + '->' + str(src)] = rows
-            else:
-                logger.warning('Nothing have been blocked from' + str(src) + ' to ' + str(dst))
-        # Blocking custom resouces
-        if config['Miscellaneous']['custom']:
-            logger.info('Blocking custom resources')
-            rows = webconn.call(module='api.blocking',
-                                method='blockCustom',
-                                **config['API'])
-            logger.info('Blocked ' + str(rows))
-            rowsdict['Custom'] = rows
-
-        # Unblocking
-        whitelist = config['Miscellaneous']['whitelist']
-        if whitelist is not None:
-            logger.info('Unblocking whitelist')
-            rows = webconn.call(module='api.blocking',
-                                method='unblockSet',
-                                resSet=whitelist,
-                                **config['API'])
-            logger.info('Unblocked ' + str(rows))
-            rowsdict['Undone'] = rows
+        result = 'Dump have been parsed to database successfully'
+        logger.info(result)
 
         # Updating the state in the database
-        result = 'Blocking results\n' + '\n'.join(k + ':' + str(v) for k,v in rowsdict.items())
-        # Updating the state in database
         webconn.call(module='api.procutils',
                      method='finishJob',
                      log_id=log_id,

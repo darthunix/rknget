@@ -87,42 +87,10 @@ def main():
         dumpparse.parse(xmldump)
         # Freeing memory
         del xmldump
-        logger.info('Dump have been parsed to database successfully')
-
-        # Blocking
-        rowsdict = dict()
-        # It may slow down but is safe
-        blocking.unblockResources()
-        # Fairly blocking first
-        logger.debug('Blocking fairly (as is)')
-        rows = blocking.blockResourcesFairly()
-        rowsdict['fairly'] = rows
-        logger.info('Blocked fairly ' + str(rows) + ' rows')
-        for src, dst in config['Blocking']:
-            logger.info('Blocking ' + str(dst) + ' from ' + str(src))
-            rows = blocking.blockResourcesExcessively(src, dst)
-            if rows is not None:
-                logger.info('Blocked ' + str(rows) + ' rows')
-                rowsdict[str(dst) + '->' + str(src)] = rows
-            else:
-                logger.warning('Nothing have been blocked from' + str(src) + ' to ' + str(dst))
-        # Blocking custom resouces
-        if config['Miscellaneous']['custom']:
-            logger.info('Blocking custom resources')
-            rows = blocking.blockCustom()
-            logger.info('Blocked ' + str(rows))
-            rowsdict['Custom'] = rows
-
-        # Unblocking
-        whitelist = config['Miscellaneous']['whitelist']
-        if whitelist is not None:
-            logger.info('Unblocking whitelist')
-            rows = blocking.unblockSet(whitelist)
-            logger.info('Unblocked ' + str(rows))
-            rowsdict['Undone'] = rows
+        result = 'Dump have been parsed to database successfully'
+        logger.info(result)
 
         # Updating the state in the database
-        result = 'Blocking results\n' + '\n'.join(k + ':' + str(v) for k,v in rowsdict.items())
         procutils.finishJob(log_id, 0, result)
         logger.info('Blocking was finished, enjoy your 1984th')
 

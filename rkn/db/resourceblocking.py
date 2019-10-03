@@ -1,5 +1,6 @@
+# Obsoleted
+
 from db.dbconn import connection
-from datetime import datetime
 
 cursor = connection.cursor()
 
