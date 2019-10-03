@@ -5,7 +5,7 @@ cursor = connection.cursor()
 
 
 def checkRunning(procname):
-    cursor.execute('SELECT 1 FROM log WHERE exit_code=Null AND procname = %s LIMIT 1', (procname,))
+    cursor.execute('SELECT 1 FROM log WHERE exit_code is Null AND procname = %s LIMIT 1', (procname,))
     return cursor.rowcount
 
 

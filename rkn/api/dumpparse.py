@@ -128,9 +128,8 @@ def parse(xmldump):
     dataprocessing.updateContentPresence(dump_id, list(outerHashes.keys()))
     # Set dump entry parsed.
     dataprocessing.setDumpParsed(dump_id)
-
     dataprocessing.commitChanges()
-
+    # Drop cache as stale
     caching.flushCache()
 
     return True
