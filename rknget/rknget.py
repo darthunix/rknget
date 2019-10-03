@@ -59,7 +59,7 @@ def main():
                                     method='getDumpLag',
                                     **config['API'])
             # Now
-            ts_now = utils.getUnixTS(config['Global']['tzoffset'])
+            ts_now = utils.getUnixTS()
             if ts_now - update_ts > dump_lag:
                 result = 'The latest dump is relevant'
                 logger.info(result)

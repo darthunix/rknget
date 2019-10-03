@@ -62,7 +62,7 @@ def main():
             # Last parsed dump lag in seconds
             dump_lag = monitoring.getDumpLag()
             # Now
-            ts_now = utils.getUnixTS(config['Global']['tzoffset'])
+            ts_now = utils.getUnixTS()
             if ts_now - update_ts > dump_lag:
                 result = 'Last dump is relevant'
                 logger.info(result)

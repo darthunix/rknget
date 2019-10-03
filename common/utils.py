@@ -77,11 +77,8 @@ def createFolders(*args):
             pass
 
 
-def getUnixTS(tz):
+def getUnixTS():
     """
-    :param tz: TZ offset in hours
     :return: Current unix timestamp
     """
-    if not tz:
-        return datetime.now(timezone(timedelta(hours=3))).timestamp()
-    return datetime.now(timezone(timedelta(hours=tz))).timestamp()
+    return datetime.now().timestamp()

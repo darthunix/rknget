@@ -18,6 +18,11 @@ API:
   secure: false
   timeout: 720
 
+Extra:
+  - https
+  - domain
+  - domain-mask
+
 Logging:
   logpath: ./rkn-bird.log
   stdoutlvl: DEBUG

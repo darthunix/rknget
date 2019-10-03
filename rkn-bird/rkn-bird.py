@@ -69,10 +69,11 @@ def main():
     try:
         # Fetching ip restrictions
         logger.info('Fetching restrictions list from DB')
-        ipsublist = webconn.call(module='api.restrictions',
-                                 method='getBlockedIPs',
+        ipsublist = webconn.call(module='api.newrestrictions',
+                                 method='getBlockedPrefixes',
                                  collapse=config['Bird']['collapse'],
                                  ipv6=config['Bird']['ipv6'],
+                                 srcenttys=config['Extra'],
                                  **config['API'])
         # Checking limit
         if len(ipsublist) > config['Bird']['limit']:

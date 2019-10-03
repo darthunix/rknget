@@ -6,7 +6,6 @@ Global:
   reqPathSig: ./request.xml.sig
   forcerun: False
   procname: rknget
-  tzoffset: 3
 
 DumpLoader:
   url: http://vigruzki.rkn.gov.ru/services/OperatorRequest/?wsdl
