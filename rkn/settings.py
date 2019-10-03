@@ -1,10 +1,10 @@
 class apiconf:
     cacheable = {
-        'api.restrictions',
-        'api.newrestrictions'
+        'api.oldrestrictions',
+        'api.restrictions'
     }
     getable = {
+        'api.oldrestrictions',
         'api.restrictions',
-        'api.newrestrictions',
         'api.monitoring'
     }

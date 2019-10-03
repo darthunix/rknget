@@ -1,145 +1,232 @@
 from db import blockdata
 
 import ipaddress
+import api.caching
 
 import api.restrutils
 
 """
 This module only operates with Resources data
-I had to switch returned datasets to list to make those json serialisable
+I had to switch returned datasets to a list type to make those json serialisable
 """
 
 
-def _getBlockedDataList(entityname):
-    """
-    Function for debug purposes
-    :return: entities set
-    """
-    return list(blockdata.getBlockedResourcesSet(entityname))
+def _makeUniqList(x):
+    if not x:
+        return []
+    elif type(x) is str:
+        return [x]
+    elif hasattr(x, '__iter__'):
+        return list(set(x))
+    return [x]
 
 
-def getBlockedHTTP():
+def getBlockedDataSet(entitytypes, blocktypes, srcenttys=None, **kwargs):
     """
-    :return URLs strings list
+    Returns blocked data set
+    :param entitytypes: target entity type set
+    :param blocktypes: content blocktype set
+    :param srcenttys: additional entity type set for excessive blockings
+    :return: set of strings
     """
-    return list(blockdata.getBlockedResourcesSet('http'))
+    return blockdata.getBlockedData(
+        _makeUniqList(entitytypes),
+        _makeUniqList(blocktypes),
+        _makeUniqList(srcenttys))
 
 
-def getBlockedHTTPS():
+def getBlockedPrefixes(collapse=False, ipv6=False, **kwargs):
     """
-    :return URLs strings list
-    """
-    return list(blockdata.getBlockedResourcesSet('https'))
-
-
-def getBlockedIPsFromSubnets():
-    """
-    Explodes restricted ip subnets into IP list.
-    :return: IP list.
-    """
-    ipsubs = {ipaddress.ip_network(addr)
-              for addr in blockdata.getBlockedResourcesSet('ipsubnet')}
-
-    return [str(host) for ipsub in ipsubs for host in ipsub.hosts()]
-
-
-def getBlockedIPList(collapse=True, ipv6=False):
-    """
-    Function for getting only IP blockings as IPAddress objects.
-    :param collapse: merge and minimize IPs and networks
-    :param ipv6: use ipv6 entities
-    :return: The list of ip subnets, using /32 for ips.
-    """
-    if ipv6:
-        ips = [ipaddress.ip_network(addr) for addr in blockdata.getBlockedResourcesSet('ipv6')]
-        ipsubs = [ipaddress.ip_network(addr) for addr in blockdata.getBlockedResourcesSet('ipv6subnet')]
-    else:
-        ips = [ipaddress.ip_network(addr) for addr in blockdata.getBlockedResourcesSet('ip')]
-        ipsubs = [ipaddress.ip_network(addr) for addr in blockdata.getBlockedResourcesSet('ipsubnet')]
-    ipsall = ips + ipsubs
-    if collapse:
-        return list(ipaddress.collapse_addresses(ipsall))
-    return list(ipsall)
-
-
-def getBlockedIPs(collapse=True, ipv6=False):
-    """
-    Converts objects to text.
+    Returns the complete list of prefixes to restrict.
     :param collapse: merge and minimize IPs and networks
     :param ipv6: use ipv6 entities
     :return: The total and the list of ip subnets, using /32 for ips
     """
-    ipsall = getBlockedIPList(collapse, ipv6)
-    return list(map(str, ipsall))
+    blocktype = 'ip'
+    if ipv6:
+        entitytypes = ['ipv6', 'ipv6subnet']
+    else:
+        entitytypes = ['ip', 'ipsubnet']
+    prefixes = map(ipaddress.ip_network,
+                  api.caching.getDataCached(
+                      getBlockedDataSet,
+                      entitytypes,
+                      blocktype,
+                      **kwargs)
+                  )
+    if collapse:
+        prefixes = ipaddress.collapse_addresses(prefixes)
+    return list(map(str, prefixes))
 
 
-def getBlockedDomains(collapse=True, wc_asterize=False):
+def getBlockedDomains(collapse=False, wc_asterize=False, **kwargs):
     """
     Brand new procedure. Uses domain tree to cleanup excess domains.
     :param collapse: merge domains if wildcard analogue exists
     :param wc_asterize: merge domains if wildcard analogue exists
-    :return: 2 sets: domains and wildcard domains
+    :return: list of 2 lists: domains and wildcard domains
     """
-    domains = blockdata.getBlockedResourcesSet('domain')
-    wdomains = blockdata.getBlockedResourcesSet('domain-mask')
+    domains = api.caching.getDataCached(
+        getBlockedDataSet,
+        'domain',
+        'domain',
+        **kwargs)
+    wdomains = api.caching.getDataCached(
+        getBlockedDataSet,
+        'domain-mask',
+        'domain-mask',
+        **kwargs)
+
     if not collapse:
         if wc_asterize:
             wdomains = map(lambda s: '*.'+s, wdomains)
         return [list(domains),
                 list(wdomains)]
+
     # Building domains tree
     dnstree = api.restrutils.mkdnstree(domains,wdomains)
     # Coalescing the tree to a list of domain-as-lists
     # Starting with TLD, not 0LD
     dnsmap = api.restrutils.mapdnstree(dnstree[""])
     # Making text domains and wdomains again
-    return list( map(list,api.restrutils.dnslistmerged(dnsmap, wc_asterize)) )
+    return list( map(list, api.restrutils.dnslistmerged(dnsmap, wc_asterize)) )
 
 
-def getBlockedDNS(collapse=True):
+def getBlockedDNS(collapse=False, **kwargs):
     """
     Returns domains list only.
     :param collapse: merge domains if wildcard analogue exists.
-    Calls getBlockedDomains, no way else.
     :return: domains set
     """
     if not collapse:
-        return list(blockdata.getBlockedResourcesSet('domain'))
+        return list(api.caching.getDataCached(
+            getBlockedDataSet,
+            'domain',
+            'domain',
+            **kwargs))
     # Else
-    return getBlockedDomains(collapse=True)[0]
+    return api.caching.getDataCached(
+        getBlockedDomains,
+        collapse=True,
+        **kwargs)[0]
 
 
-def getBlockedWildcardDNS(collapse=True, wc_asterize=False):
+def getBlockedWildcardDNS(collapse=False, wc_asterize=False, **kwargs):
     """
     Returns wildcard domains list only.
     :param collapse: merge domains if wildcard analogue exists.
-    Calls getBlockedDomains, no way else.
+    :param wc_asterize: merge domains if wildcard analogue exists
     :return: wildcard domains set
     """
     if not collapse:
-        wdomains = blockdata.getBlockedResourcesSet('domain-mask')
+        wdomains = api.caching.getDataCached(
+            getBlockedDataSet,
+            'domain-mask',
+            'domain-mask',
+            **kwargs)
         if wc_asterize:
             wdomains = map(lambda s: '*.'+s, wdomains)
         return list(wdomains)
     # Else
-    return getBlockedDomains(collapse=True, wc_asterize=wc_asterize)[1]
+    return api.caching.getDataCached(
+        getBlockedDomains,
+        collapse=True,
+        wc_asterize=True,
+        **kwargs)[1]
 
 
-def getFairlyBlockedIPs(collapse=True, ipv6=False):
+def getBlockedIP(ipv6=False, as_prefixes=False, **kwargs):
     """
-    Function for getting only IP blockings as IPAddress objects.
-    :param collapse: merge and minimize IPs and networks
+    Returns the list of /32 prefixes to restrict.
     :param ipv6: use ipv6 entities
-    :return: The list of ip subnets, using /32 for ips.
+    :param as_prefixes: return a prefix form (ip.ad.ddr.ess/32)
+    :return: Only IP list
     """
+    blocktype = 'ip'
     if ipv6:
-        ips = [ipaddress.ip_network(addr) for addr in blockdata.getFairlyBlockedResourcesSet('ipv6')]
-        ipsubs = [ipaddress.ip_network(addr) for addr in blockdata.getFairlyBlockedResourcesSet('ipv6subnet')]
+        entitytypes = ['ipv6']
     else:
-        ips = [ipaddress.ip_network(addr) for addr in blockdata.getFairlyBlockedResourcesSet('ip')]
-        ipsubs = [ipaddress.ip_network(addr) for addr in blockdata.getFairlyBlockedResourcesSet('ipsubnet')]
-    ipsall = ips + ipsubs
-    if collapse:
-        return list(ipaddress.collapse_addresses(ipsall))
-    return list(map(str, ipsall))
+        entitytypes = ['ip']
+    if as_prefixes:
+        func = ipaddress.ip_network
+    else:
+        func = ipaddress.ip_address
+    prefixes = map(func,
+                  api.caching.getDataCached(
+                      getBlockedDataSet,
+                      entitytypes,
+                      blocktype,
+                      **kwargs)
+                  )
+    return list(map(str, prefixes))
+
+
+def getBlockedIPSubnets(ipv6=False, **kwargs):
+    """
+    Returns the list of prefixes to restrict.
+    :param ipv6: use ipv6 entities
+    :return: Only IP subnets list
+    """
+    blocktype = 'ip'
+    if ipv6:
+        entitytypes = ['ipv6subnet']
+    else:
+        entitytypes = ['ipsubnet']
+    prefixes = map(ipaddress.ip_network,
+                  api.caching.getDataCached(
+                      getBlockedDataSet,
+                      entitytypes,
+                      blocktype,
+                      **kwargs)
+                  )
+    return list(map(str, prefixes))
+
+
+def getBlockedHTTP(cutproto=False, **kwargs):
+    """
+    :return URLs strings list
+    """
+    urlset = api.caching.getDataCached(
+        getBlockedDataSet,
+        'http',
+        'default',
+        **kwargs)
+    if not cutproto:
+        return list(urlset)
+    else:
+        return [api.restrutils.strcut(u,'http://') for u in urlset]
+
+
+def getBlockedHTTPS(cutproto=False, **kwargs):
+    """
+    :return SSL URLs strings list
+    """
+    urlset = api.caching.getDataCached(
+        getBlockedDataSet,
+        'https',
+        'default',
+        **kwargs)
+    if not cutproto:
+        return list(urlset)
+    else:
+        return [api.restrutils.strcut(u,'https://') for u in urlset]
+
+
+def getBlockedURLs(cutproto=False, **kwargs):
+    """
+    :param proto: Cuts protocol, so that merges the same
+    :return: All URLs, either http or https
+    """
+    # It may be sometimes longer, but more universal
+    return(list(set.union(
+        set(api.caching.getDataCached(
+            getBlockedHTTP,
+            cutproto=cutproto,
+            **kwargs)),
+        set(api.caching.getDataCached(
+            getBlockedHTTPS,
+            cutproto=cutproto,
+            ** kwargs))
+    )))
+
 

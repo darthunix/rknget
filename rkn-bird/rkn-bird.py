@@ -69,7 +69,7 @@ def main():
     try:
         # Fetching ip restrictions
         logger.info('Fetching restrictions list from DB')
-        ipsublist = webconn.call(module='api.newrestrictions',
+        ipsublist = webconn.call(module='api.restrictions',
                                  method='getBlockedPrefixes',
                                  collapse=config['Bird']['collapse'],
                                  ipv6=config['Bird']['ipv6'],

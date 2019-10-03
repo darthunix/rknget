@@ -164,7 +164,7 @@ def main():
 
         logger.info('Fetching restrictions list from DB')
         domainBlockSet, \
-        wdomainBlockSet = webconn.call(module='api.newrestrictions',
+        wdomainBlockSet = webconn.call(module='api.restrictions',
                                        method='getBlockedDomains',
                                        collapse=config['Unbound']['collapse'],
                                        srcenttys=config['Extra'],

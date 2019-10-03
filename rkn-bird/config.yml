@@ -9,7 +9,7 @@ Bird:
   collapse: True
   stubip: 1.1.1.1
   ipv6: False
-  limit: 120000
+  limit: 950000
 
 API:
   host: 10.1.253.90

@@ -147,7 +147,7 @@ def main():
         # Using particular case for http
         httpstrip = lambda x: x[7:] if x.find('http://') == 0 else x
         urlsSet = {httpstrip(url)
-                   for url in webconn.call(module='api.newrestrictions',
+                   for url in webconn.call(module='api.restrictions',
                                            method='getBlockedHTTP',
                                            cutproto=True,
                                            **config['API'])
@@ -157,7 +157,7 @@ def main():
             httpsstrip = lambda x: x[8:] if x.find('https://') == 0 else x
             urlsSet.update(
                 {httpsstrip(url)
-                 for url in webconn.call(module='api.newrestrictions',
+                 for url in webconn.call(module='api.restrictions',
                                          method='getBlockedHTTPS',
                                          cutproto=True,
                                          **config['API'])
@@ -165,7 +165,7 @@ def main():
             )
         if config['Extra']['domain']:
             urlsSet.update(
-                webconn.call(module='api.newrestrictions',
+                webconn.call(module='api.restrictions',
                              method='getBlockedDataSet',
                              entitytypes='domain',
                              blocktypes='domain',
@@ -173,7 +173,7 @@ def main():
             )
         if config['Extra']['domain-mask']:
             urlsSet.update(
-                webconn.call(module='api.newrestrictions',
+                webconn.call(module='api.restrictions',
                              method='getBlockedDataSet',
                              entitytypes='domain-mask',
                              blocktypes='domain-mask',
