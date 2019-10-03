@@ -58,12 +58,12 @@ def main():
             # Loaded dump unix timestamp in seconds
             update_ts = max(dumpDate['lastDumpDate'],
                             dumpDate['lastDumpDateUrgently'])/1000
-            logger.debug('Latest dump timestamp is: ' +
+            logger.info('Latest dump timestamp is: ' +
                          str(datetime.fromtimestamp(update_ts))
                          )
             # Last parsed dump lag in seconds
             dump_ts = monitoring.getLastDumpTS()
-            logger.debug('Parsed dump timestamp is: ' +
+            logger.info('Parsed dump timestamp is: ' +
                          str(datetime.fromtimestamp(dump_ts))
                          )
             # 5 seconds rule
