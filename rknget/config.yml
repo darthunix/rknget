@@ -22,11 +22,6 @@ API:
   secure: false
   timeout: 720
 
-Blocking:
-  - [https, domain]
-  - [https, ip]
-  - [domain-mask, ip]
-
 Miscellaneous:
   custom: True
   uselocaldump: False
