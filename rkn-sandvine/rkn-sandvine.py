@@ -90,7 +90,7 @@ def exportDomains(path_domain, path_wdomain, collapse=True,
 
 def exportIPs(path, collapse=True, subnet_fmt=False, ipv6=False, **apiconf):
     dataset = webconn.call(module='api.restrictions',
-                           method='getBlockedIPs',
+                           method='getBlockedPrefixes',
                            collapse=collapse,
                            ipv6=ipv6,
                            **apiconf)
