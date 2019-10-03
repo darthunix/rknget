@@ -61,8 +61,8 @@ def main():
                             dumpDate['lastDumpDateUrgently'])/1000
             # Last parsed dump lag in seconds
             dump_ts = monitoring.getLastDumpTS()
-
-            if update_ts > dump_ts:
+            # 5 seconds rule
+            if update_ts + 5 > dump_ts:
                 result = 'Last dump is relevant'
                 logger.info(result)
                 dumpparse.updateDumpCheckTime()

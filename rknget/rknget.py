@@ -58,8 +58,8 @@ def main():
             dump_ts = webconn.call(module='api.monitoring',
                                    method='getLastDumpTS',
                                    **config['API'])
-
-            if update_ts > dump_ts:
+            # 5 seconds rule
+            if update_ts + 5 > dump_ts:
                 result = 'The latest dump is relevant'
                 logger.info(result)
                 # Updating the state in database
