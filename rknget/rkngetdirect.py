@@ -67,7 +67,7 @@ def main():
                          str(datetime.fromtimestamp(dump_ts))
                          )
             # 5 seconds rule
-            if update_ts < dump_ts + :
+            if update_ts < dump_ts + 5:
                 result = 'Last dump is relevant'
                 logger.info(result)
                 dumpparse.updateDumpCheckTime()
