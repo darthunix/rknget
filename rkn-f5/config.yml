@@ -19,13 +19,9 @@ F5:
 
 Extra:
   https: True
-  ip: True
-  ipsubnet: False
-  ipv6: False
-  ipv6subnet: False
-  domain: True
-  domain-mask: True
-  truncate-after: 200000
+  domain: False
+  domain-mask: False
+  truncate-after: 250000
 
 API:
   host: 10.1.253.90

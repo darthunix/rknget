@@ -147,8 +147,9 @@ def main():
         # Using particular case for http
         httpstrip = lambda x: x[7:] if x.find('http://') == 0 else x
         urlsSet = {httpstrip(url)
-                   for url in webconn.call(module='api.restrictions',
+                   for url in webconn.call(module='api.newrestrictions',
                                            method='getBlockedHTTP',
+                                           cutproto=True,
                                            **config['API'])
                    }
         if config['Extra']['https']:
@@ -156,52 +157,28 @@ def main():
             httpsstrip = lambda x: x[8:] if x.find('https://') == 0 else x
             urlsSet.update(
                 {httpsstrip(url)
-                 for url in webconn.call(module='api.restrictions',
+                 for url in webconn.call(module='api.newrestrictions',
                                          method='getBlockedHTTPS',
+                                         cutproto=True,
                                          **config['API'])
                  }
             )
         if config['Extra']['domain']:
             urlsSet.update(
-                webconn.call(module='api.restrictions',
-                             method='_getBlockedDataList',
-                             entityname='domain',
+                webconn.call(module='api.newrestrictions',
+                             method='getBlockedDataSet',
+                             entitytypes='domain',
+                             blocktypes='domain',
                              **config['API'])
             )
         if config['Extra']['domain-mask']:
             urlsSet.update(
-                webconn.call(module='api.restrictions',
-                             method='_getBlockedDataList',
-                             entityname='domain-mask',
+                webconn.call(module='api.newrestrictions',
+                             method='getBlockedDataSet',
+                             entitytypes='domain-mask',
+                             blocktypes='domain-mask',
                              **config['API'])
             )
-        if config['Extra']['ip']:
-            urlsSet.update(
-                webconn.call(module='api.restrictions',
-                             method='_getBlockedDataList',
-                             entityname='ip',
-                             **config['API'])
-            )
-        if config['Extra']['ipsubnet']:
-            urlsSet.update(
-                webconn.call(module='api.restrictions',
-                             method='_getBlockedDataList',
-                             entityname='ipv6',
-                             **config['API'])
-            )
-        if config['Extra']['ipv6']:
-            # Wrapping into square brackets, see RFC2732
-            sq = lambda s: '[' + s + ']'
-            urlsSet.update(
-                map(sq,
-                    webconn.call(module='api.restrictions',
-                                 method='_getBlockedDataList',
-                                 entityname='ip',
-                                 **config['API'])
-                    )
-            )
-        if config['Extra']['ipv6subnet']:
-            logger.warning('Bad idea, won\'t do that')
         # Truncating entries if too many.
         if len(urlsSet) > config['Extra']['truncate-after']:
             logger.debug('Truncating entries: ' + str(len(urlsSet) - config['Extra']['truncate-after']))
