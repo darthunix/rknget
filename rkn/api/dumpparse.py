@@ -19,7 +19,7 @@ class RKNDumpFormatException(BaseException):
 
 
 def updateDumpCheckTime():
-    dataprocessing.updateContentPresence()
+    dataprocessing.updateDumpCheckTime()
     return True
 
 
