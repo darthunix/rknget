@@ -17,7 +17,7 @@ def _getResourcesSetByBlocktype(entitytype, blocktype, **kwargs):
     return blockdata.getResourcesByBlocktype(entitytype, blocktype)
 
 
-def _getResourcesByEntitytype(entitytype, srcentty, **kwargs):
+def _getResourcesSetByEntitytype(entitytype, srcentty, **kwargs):
     return blockdata.getResourcesByBlocktype(entitytype, srcentty)
 
 def _getCustomResourcesSet(entitytype, is_banned=False, **kwargs):
@@ -57,7 +57,7 @@ def getBlockedDataSet(entitytypes, blocktypes, srcenttys=None, **kwargs):
         for s in _makeUniqList(srcenttys):
             result.update(
                 api.caching.getDataCached(
-                    _getResourcesByEntitytype, e, s)
+                    _getResourcesSetByEntitytype, e, s)
             )
         result.difference_update(
             api.caching.getDataCached(
