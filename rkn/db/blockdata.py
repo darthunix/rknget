@@ -57,7 +57,7 @@ def getResourcesByBlocktype(entitytype, blocktype):
         JOIN blocktype ON blocktype_id = blocktype.id
         JOIN entitytype ON entitytype_id = entitytype.id
         WHERE in_dump = True AND entitytype.name = %s
-        AND blocktype.name = ANY(%s) 
+        AND blocktype.name = %s
         ''',
         (entitytype, blocktype,)
     )
