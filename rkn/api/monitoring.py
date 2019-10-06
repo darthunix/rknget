@@ -37,7 +37,7 @@ def getBlockedIPCount(ipv6=False, **kwargs):
     prefixes = map(ipaddress.ip_network,
                   api.caching.getDataCached(
                       api.restrictions.getBlockedPrefixes,
-                      collapse=True,
+                      collapse=False,
                       ipv6=ipv6,
                       **kwargs)
                   )
