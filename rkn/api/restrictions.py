@@ -26,21 +26,21 @@ def _getBlockedDataSet(entitytype, blocktype, srcenttys):
     for e in entitytype:
         result.update(
             api.caching.getDataCached(
-                blocktype.getCustomResources, e, is_banned=True)
+                blockdata.getCustomResources, e, is_banned=True)
         )
         for b in blocktype:
             result.update(
                 api.caching.getDataCached(
-                    blocktype.getResourcesByBlocktype, e, b)
+                    blockdata.getResourcesByBlocktype, e, b)
             )
         for s in srcenttys:
             result.update(
                 api.caching.getDataCached(
-                    blocktype.getResourcesByEntitytype, e, s)
+                    blockdata.getResourcesByEntitytype, e, s)
             )
         result.difference_update(
             api.caching.getDataCached(
-                blocktype.getCustomResources, e, is_banned=False)
+                blockdata.getCustomResources, e, is_banned=False)
         )
     return result
 
