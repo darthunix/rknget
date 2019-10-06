@@ -72,8 +72,6 @@ def getBlockedDataSet(entitytypes, blocktypes, srcenttys=None, **kwargs):
         _makeUniqList(srcenttys)
     )
 
-    _getBlockedDataSet(entitytypes, blocktypes, srcenttys=None
-
 
 def getBlockedPrefixes(collapse=False, ipv6=False, **kwargs):
     """
