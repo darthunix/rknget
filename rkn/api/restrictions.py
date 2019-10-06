@@ -13,15 +13,37 @@ I had to switch returned datasets to a list type to make those json serialisable
 # These functions are mappings for db.blockdata functions.
 # Made to terminate excessive kwargs passthrough, but cache their results.
 
-def _getResourcesSetByBlocktype(entitytype, blocktype, **kwargs):
-    return blockdata.getResourcesByBlocktype(entitytype, blocktype)
+def _getBlockedDataSet(entitytype, blocktype, srcenttys):
+    """
+    returns resources data set
+    :param entitytypes: target entity type set
+    :param blocktypes: content blocktype set
+    :param srcenttys: additional entity type set for excessive blockings
+    :return: set of strings
+    """
+    # It should be multithreaded!
+    result = set()
+    for e in entitytype:
+        result.update(
+            api.caching.getDataCached(
+                blocktype.getCustomResources, e, is_banned=True)
+        )
+        for b in blocktype:
+            result.update(
+                api.caching.getDataCached(
+                    blocktype.getResourcesByBlocktype, e, b)
+            )
+        for s in srcenttys:
+            result.update(
+                api.caching.getDataCached(
+                    blocktype.getResourcesByEntitytype, e, s)
+            )
+        result.difference_update(
+            api.caching.getDataCached(
+                blocktype.getCustomResources, e, is_banned=False)
+        )
+    return result
 
-
-def _getResourcesSetByEntitytype(entitytype, srcentty, **kwargs):
-    return blockdata.getResourcesByBlocktype(entitytype, srcentty)
-
-def _getCustomResourcesSet(entitytype, is_banned=False, **kwargs):
-    return blockdata.getCustomResources(entitytype, is_banned)
 
 
 def _makeUniqList(x):
@@ -36,34 +58,21 @@ def _makeUniqList(x):
 
 def getBlockedDataSet(entitytypes, blocktypes, srcenttys=None, **kwargs):
     """
-    Returns blocked data set
+    Calls the same named private method.
+    This one terminates kwargs, serialises argsuments.
     :param entitytypes: target entity type set
     :param blocktypes: content blocktype set
     :param srcenttys: additional entity type set for excessive blockings
     :return: set of strings
     """
-    # It should be multithreaded!
-    result = set()
-    for e in _makeUniqList(entitytypes):
-        result.update(
-            api.caching.getDataCached(
-                _getCustomResourcesSet, e, is_banned=True)
-        )
-        for b in _makeUniqList(blocktypes):
-            result.update(
-                api.caching.getDataCached(
-                    _getResourcesSetByBlocktype, e, b)
-            )
-        for s in _makeUniqList(srcenttys):
-            result.update(
-                api.caching.getDataCached(
-                    _getResourcesSetByEntitytype, e, s)
-            )
-        result.difference_update(
-            api.caching.getDataCached(
-                _getCustomResourcesSet, e, is_banned=False)
-        )
-    return result
+    return api.caching.getDataCached(
+        _getBlockedDataSet,
+        _makeUniqList(entitytypes),
+        _makeUniqList(blocktypes),
+        _makeUniqList(srcenttys)
+    )
+
+    _getBlockedDataSet(entitytypes, blocktypes, srcenttys=None
 
 
 def getBlockedPrefixes(collapse=False, ipv6=False, **kwargs):
