@@ -14,7 +14,7 @@ from datetime import datetime
 
 sys.path.append('../')
 sys.path.append('../rkn')
-from api import dumpparse, blocking, procutils, monitoring
+from api import dumpparse, procutils, monitoring
 import rknsoapwrapper
 from common import utils
 
