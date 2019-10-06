@@ -1,5 +1,5 @@
 from db import dbops
-from api import parseutils
+from api import parseutils, caching
 
 """
 This module provides API for 'rkncli' utility.
@@ -45,6 +45,8 @@ def _addCustomResource(entitytype, value, is_banned=False, **kwargs):
     except KeyError:
         # No checks for this entity type
         return 'Entitytype error'
+
+    caching.flushCache()
     return(
         dbops.addCustomResource(
             entitytype=entitytype,
@@ -75,6 +77,7 @@ def delCustomResource(entitytype, value, **kwargs):
     Deletes custom resource to the database's Resource table.
     :return: row ID if deleted, 0 otherwise
     """
+    caching.flushCache()
     return dbops.delCustomResource(
         entitytype=entitytype,
         value=value
