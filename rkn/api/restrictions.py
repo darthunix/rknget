@@ -266,3 +266,26 @@ def getBlockedURLs(cutproto=False, **kwargs):
             cutproto=cutproto,
             ** kwargs))
     )))
+
+
+def getBlockedDNSGlob(**kwargs):
+    """
+    In order to block wdomain as glob, some programs are required to
+    check both *.domain and domain for matching.
+    This call adds to the domains list either
+    wdomains and asterized wdomains, so
+    collapse=True and asterized=True are implied.
+    :return: list of 3 lists: domains, wdomains, and asterized wdomains
+    """
+
+    domains, wdomains = api.caching.getDataCached(
+        getBlockedDomains,
+        collapse=True,
+        **kwargs
+    )
+
+    return [domains,
+            wdomains,
+            ['*.'+w for w in wdomains] #No lambdas, thanks
+            ]
+
