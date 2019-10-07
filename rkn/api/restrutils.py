@@ -77,6 +77,8 @@ def mkdnstree(domains, wdomains):
         dnstree_ptr = dnstree.setdefault("")
         for i in w.split('.').__reversed__():
             dnstree_ptr = dnstree_ptr.setdefault(i, {})
+            if dnstree_ptr.get(""):
+                break
         dnstree_ptr.clear()
         dnstree_ptr[""] = True
     return dnstree

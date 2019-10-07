@@ -122,7 +122,7 @@ def getBlockedDomains(collapse=False, wc_asterize=False, **kwargs):
                 list(wdomains)]
 
     # Building domains tree
-    dnstree = api.restrutils.mkdnstree(domains,wdomains)
+    dnstree = api.restrutils.mkdnstree(domains, wdomains)
     # Coalescing the tree to a list of domain-as-lists
     # Starting with TLD, not 0LD
     dnsmap = api.restrutils.mapdnstree(dnstree[""])
