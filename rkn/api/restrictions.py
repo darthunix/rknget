@@ -10,6 +10,8 @@ This module only operates with Resources data
 I had to switch returned datasets to a list type to make those json serialisable
 """
 
+# TODO implement whitelist unblocking for entitytype-specific procedures
+
 # These functions are mappings for db.blockdata functions.
 # Made to terminate excessive kwargs passthrough, but cache their results.
 
