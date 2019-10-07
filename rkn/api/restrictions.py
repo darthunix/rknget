@@ -268,7 +268,7 @@ def getBlockedURLs(cutproto=False, **kwargs):
     )))
 
 
-def getBlockedDNSGlob(**kwargs):
+def getBlockedDomainsGlob(**kwargs):
     """
     In order to block wdomain as glob, some programs are required to
     check both *.domain and domain for matching.
