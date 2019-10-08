@@ -9,25 +9,28 @@ Sandvine:
   export:
     http:
       path: tmp/urls.lst
-      truncate_proto: False
+      cutproto: False
     https:
       path: tmp/https.lst
-      only_sni: True
-      from_domains: False
+      cutproto: False
     domain:
-      path_domain: tmp/domains.lst
+      path: tmp/domains.lst
       collapse: True
-      path_wdomain: tmp/wdomains.lst
-      asterize_wc: False
-      sort: True
+      extra: https
+    wdomain:
+      path: tmp/wdomains.lst
+      collapse: True
+      wc_asterize: True
     ipv4:
       path: tmp/ips.lst
       collapse: True
       subnet_fmt: False
+      extra: [https, domain, domain-mask]
     ipv6:
       path: tmp/ipv6s.lst
       collapse: True
       subnet_fmt: False
+      extra: [https, domain, domain-mask]
 
 API:
   host: 10.1.253.90

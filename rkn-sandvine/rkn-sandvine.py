@@ -27,72 +27,63 @@ def getdomain(urlstr):
     return urllib.parse.urlparse(urlstr).netloc.split(':')[0].lower()
 
 
-def exportHTTP(path, truncate_proto=False, **apiconf):
+def exportHTTP(path, cutproto=False, extra=None, **apiconf):
     """
-    :param truncate_proto: Cuts 'https://'
+    :param cutproto: Truncates 'https://'
     """
     dataset = webconn.call(module='api.restrictions',
                            method='getBlockedHTTP',
+                           cutproto=cutproto,
+                           srcenttys=extra,
                            **apiconf)
-    if truncate_proto:
-        dataset = {url[url.find('://')+3:] for url in dataset}
-
     return exportToFileFormatted(path, dataset)
 
 
-def exportHTTPS(path, only_sni=True, from_domains=True, **apiconf):
+def exportHTTPS(path, cutproto=False, extra=None, **apiconf):
     """
-    :param only_sni: Writes only SNI parsed from URL using urllib
-    :param from_domains: Fetches SNI's from domains instead of https URL's
+    :param cutproto: Truncates 'https://'
     """
-    if from_domains:
-        dataset = webconn.call(module='api.restrictions',
-                               method='getBlockedDomains',
-                               collapse=False,
-                               **apiconf)
-    else:
-        dataset = webconn.call(module='api.restrictions',
-                               method='getBlockedHTTPS',
-                               **apiconf)
-        if only_sni:
-            dataset = {getdomain(url) for url in dataset}
-
+    dataset = webconn.call(module='api.restrictions',
+                           method='getBlockedHTTPS',
+                           cutproto=cutproto,
+                           srcenttys=extra,
+                           **apiconf)
     return exportToFileFormatted(path, dataset)
 
 
-def exportDomains(path_domain, path_wdomain, collapse=True,
-                  asterize_wc=False, sort=False, **apiconf):
+def exportDomains(path, collapse=True, extra = None, ** apiconf):
     """
-    :param collapse: Collapse domains matching wdomains
-    :param asterize_wc: Add *. to wdomains
+    :param collapse: Collapse excessive.
     """
-    domains, wdomains = webconn.call(module='api.restrictions',
-                                     method='getBlockedDomains',
-                                     collapse=collapse,
-                                     **apiconf)
-    if sort:
-        domains = list(domains)
-        domains.sort()
-    wb = exportToFileFormatted(path_domain, domains)
-    if path_wdomain is None:
-        return wb
-    # Non-wildcard processing stops here.
-
-    if sort:
-        wdomains = list(wdomains)
-        wdomains.sort()
-
-    if asterize_wc:
-        wdomains = {'*.' + dom for dom in wdomains}
-
-    return wb + exportToFileFormatted(path_wdomain, wdomains)
+    dataset = webconn.call(module='api.restrictions',
+                           method='getBlockedDNS',
+                           collapse=collapse,
+                           srcenttys=extra,
+                           **apiconf)
+    return exportToFileFormatted(path, dataset)
 
 
-def exportIPs(path, collapse=True, subnet_fmt=False, ipv6=False, **apiconf):
+def exportWDomains(path, collapse=True, wc_asterize=False,
+                          extra = None, ** apiconf):
+    """
+    :param collapse: Collapse excessive.
+    :param wc_asterize: Appends *. prefix.
+    """
+    dataset = webconn.call(module='api.restrictions',
+                           method='getBlockedWildcardDNS',
+                           collapse=collapse,
+                           wc_asterize=wc_asterize,
+                           srcenttys=extra,
+                           **apiconf)
+    return exportToFileFormatted(path, dataset)
+
+
+def exportIPs(path, collapse=True, subnet_fmt=False, ipv6=False, extra=None, **apiconf):
     dataset = webconn.call(module='api.restrictions',
                            method='getBlockedPrefixes',
                            collapse=collapse,
                            ipv6=ipv6,
+                           srcenttys=extra,
                            **apiconf)
     if not subnet_fmt:
         if ipv6:
@@ -105,18 +96,19 @@ def exportIPs(path, collapse=True, subnet_fmt=False, ipv6=False, **apiconf):
     return exportToFileFormatted(path, dataset)
 
 
-def exportIPv4s(path, collapse=True, subnet_fmt=False, **apiconf):
-    return exportIPs(path, collapse, subnet_fmt, ipv6=False, **apiconf)
+def exportIPv4s(path, collapse=True, subnet_fmt=False, extra=None, **apiconf):
+    return exportIPs(path, collapse, subnet_fmt, ipv6=False, extra=extra, **apiconf)
 
 
-def exportIPv6s(path, collapse=True, subnet_fmt=False, **apiconf):
-    return exportIPs(path, collapse, subnet_fmt, ipv6=True, **apiconf)
+def exportIPv6s(path, collapse=True, subnet_fmt=False, extra=None, **apiconf):
+    return exportIPs(path, collapse, subnet_fmt, ipv6=True, extra=extra, **apiconf)
 
 
 PROC_DICT = {
     'http': exportHTTP,
     'https': exportHTTPS,
     'domain': exportDomains,
+    'wdomain': exportWDomains,
     'ipv4': exportIPv4s,
     'ipv6': exportIPv6s
 }

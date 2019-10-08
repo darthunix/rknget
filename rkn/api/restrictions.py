@@ -224,6 +224,7 @@ def getBlockedIPSubnets(ipv6=False, **kwargs):
 
 def getBlockedHTTP(cutproto=False, **kwargs):
     """
+    :param proto: truncates protocol, so that merges the same
     :return URLs strings list
     """
     urlset = api.caching.getDataCached(
@@ -239,6 +240,7 @@ def getBlockedHTTP(cutproto=False, **kwargs):
 
 def getBlockedHTTPS(cutproto=False, **kwargs):
     """
+    :param proto: truncates protocol, so that merges the same
     :return SSL URLs strings list
     """
     urlset = api.caching.getDataCached(
