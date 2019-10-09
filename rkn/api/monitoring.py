@@ -35,23 +35,38 @@ def getLastExitCode(procname):
 
 def getBlockedIPCount(ipv6=False, **kwargs):
     prefixes = map(ipaddress.ip_network,
-                  api.caching.getDataCached(
-                      api.restrictions.getBlockedPrefixes,
-                      collapse=False,
-                      ipv6=ipv6,
-                      **kwargs)
+                   api.caching.getDataCached(
+                       api.restrictions.getBlockedPrefixes,
+                       collapse=False,
+                       ipv6=ipv6,
+                       **kwargs)
                   )
     return sum(map(lambda x: x.num_addresses, prefixes))
 
 
 def getBlockedSubnetsCount(collapse=False, ipv6=False, **kwargs):
     prefixes = api.caching.getDataCached(
-                   api.restrictions.getBlockedPrefixes,
-                   collapse=collapse,
-                   ipv6=ipv6,
-                   **kwargs)
-
+        api.restrictions.getBlockedPrefixes,
+        collapse=collapse,
+        ipv6=ipv6,
+        **kwargs)
     return len(prefixes)
+
+
+def getBlockedDNSCount(collapse=False, **kwargs):
+    domains = api.caching.getDataCached(
+        api.restrictions.getBlockedDNS,
+        collapse=collapse,
+        **kwargs)
+    return len(domains)
+
+
+def getBlockedWildcardDNSCount(collapse=False, **kwargs):
+    wdomains = api.caching.getDataCached(
+        api.restrictions.getBlockedWildcardDNS,
+        collapse=collapse,
+        **kwargs)
+    return len(wdomains)
 
 
 def getDumpLag():
