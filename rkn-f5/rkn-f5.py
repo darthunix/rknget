@@ -145,19 +145,21 @@ def main():
         logger.info('Fetching restrictions list from DB')
         # Don't apply lstrip('http://') for this.
         # Using particular case for http
-        urlsSet = webconn.call(module='api.restrictions',
-                               method='getBlockedHTTP',
-                               cutproto=True,
-                               **config['API'])
-
+        urlsSet = set()
+        urlsSet.update(
+            webconn.call(module='api.restrictions',
+                         method='getBlockedHTTP',
+                         cutproto=True,
+                         **config['API'])
+        )
         if config['Extra']['https']:
             # Using particular case for https
-            urlsSet.update(webconn.call(module='api.restrictions',
-                                        method='getBlockedHTTPS',
-                                        cutproto=True,
-                                        **config['API'])
-
-            )
+            urlsSet.update(
+                webconn.call(module='api.restrictions',
+                             method='getBlockedHTTPS',
+                             cutproto=True,
+                             **config['API'])
+                           )
         if config['Extra']['domain']:
             urlsSet.update(
                 webconn.call(module='api.restrictions',
