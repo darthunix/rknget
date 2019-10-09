@@ -69,6 +69,16 @@ def getBlockedWildcardDNSCount(collapse=False, **kwargs):
     return len(wdomains)
 
 
+def getBlockedURLsCount(**kwargs):
+    # It could be done with count() SQL,
+    # but cache reuse is preferred.
+    wdomains = api.caching.getDataCached(
+        api.restrictions.getBlockedURLs,
+        cutproto=True,
+        **kwargs)
+    return len(wdomains)
+
+
 def getDumpLag():
     """
     :return: Dump lag in seconds
