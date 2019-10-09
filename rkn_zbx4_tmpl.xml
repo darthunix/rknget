@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>4.2</version>
-    <date>2019-10-08T16:08:40Z</date>
+    <date>2019-10-09T15:44:39Z</date>
     <groups>
         <group>
             <name>Templates</name>
@@ -23,6 +23,65 @@
                 </application>
             </applications>
             <items>
+                <item>
+                    <name>Blocked domains count (not merged)</name>
+                    <type>19</type>
+                    <snmp_community/>
+                    <snmp_oid/>
+                    <key>rkn.mon.getBlockedDNSCount[]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>365d</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units/>
+                    <snmpv3_contextname/>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                    <snmpv3_privpassphrase/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description>This item monitors only domains.</description>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>rkn</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                    <logtimefmt/>
+                    <preprocessing/>
+                    <jmx_endpoint/>
+                    <timeout>60s</timeout>
+                    <url>http://{HOST.IP}/cgi-bin/rknget/rkn/webapi.py?module=api.monitoring&amp;method=getBlockedDNSCount&amp;srcenttys=https</url>
+                    <query_fields/>
+                    <posts/>
+                    <status_codes>200</status_codes>
+                    <follow_redirects>0</follow_redirects>
+                    <post_type>0</post_type>
+                    <http_proxy/>
+                    <headers/>
+                    <retrieve_mode>0</retrieve_mode>
+                    <request_method>0</request_method>
+                    <output_format>0</output_format>
+                    <allow_traps>0</allow_traps>
+                    <ssl_cert_file/>
+                    <ssl_key_file/>
+                    <ssl_key_password/>
+                    <verify_peer>0</verify_peer>
+                    <verify_host>0</verify_host>
+                    <master_item/>
+                </item>
                 <item>
                     <name>Blocked IPV4 count</name>
                     <type>19</type>
@@ -123,6 +182,124 @@
                     <jmx_endpoint/>
                     <timeout>60s</timeout>
                     <url>http://{HOST.IP}/cgi-bin/rknget/rkn/webapi.py?module=api.monitoring&amp;method=getBlockedSubnetsCount&amp;collapse=True&amp;srcenttys=https&amp;srcenttys=domain&amp;srcenttys=domain-mask</url>
+                    <query_fields/>
+                    <posts/>
+                    <status_codes>200</status_codes>
+                    <follow_redirects>0</follow_redirects>
+                    <post_type>0</post_type>
+                    <http_proxy/>
+                    <headers/>
+                    <retrieve_mode>0</retrieve_mode>
+                    <request_method>0</request_method>
+                    <output_format>0</output_format>
+                    <allow_traps>0</allow_traps>
+                    <ssl_cert_file/>
+                    <ssl_key_file/>
+                    <ssl_key_password/>
+                    <verify_peer>0</verify_peer>
+                    <verify_host>0</verify_host>
+                    <master_item/>
+                </item>
+                <item>
+                    <name>Blocked URLs count</name>
+                    <type>19</type>
+                    <snmp_community/>
+                    <snmp_oid/>
+                    <key>rkn.mon.getBlockedURLsCount[]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>365d</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units/>
+                    <snmpv3_contextname/>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                    <snmpv3_privpassphrase/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description>This item monitors blocked URLs (both HTTP and HTTPS).</description>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>rkn</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                    <logtimefmt/>
+                    <preprocessing/>
+                    <jmx_endpoint/>
+                    <timeout>60s</timeout>
+                    <url>http://{HOST.IP}/cgi-bin/rknget/rkn/webapi.py?module=api.monitoring&amp;method=getBlockedURLsCount</url>
+                    <query_fields/>
+                    <posts/>
+                    <status_codes>200</status_codes>
+                    <follow_redirects>0</follow_redirects>
+                    <post_type>0</post_type>
+                    <http_proxy/>
+                    <headers/>
+                    <retrieve_mode>0</retrieve_mode>
+                    <request_method>0</request_method>
+                    <output_format>0</output_format>
+                    <allow_traps>0</allow_traps>
+                    <ssl_cert_file/>
+                    <ssl_key_file/>
+                    <ssl_key_password/>
+                    <verify_peer>0</verify_peer>
+                    <verify_host>0</verify_host>
+                    <master_item/>
+                </item>
+                <item>
+                    <name>Blocked wildcard domains count (not merged)</name>
+                    <type>19</type>
+                    <snmp_community/>
+                    <snmp_oid/>
+                    <key>rkn.mon.getBlockedWildcardDNSCount[]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>365d</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units/>
+                    <snmpv3_contextname/>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                    <snmpv3_privpassphrase/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description>This item monitors only wildcard domains.</description>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>rkn</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                    <logtimefmt/>
+                    <preprocessing/>
+                    <jmx_endpoint/>
+                    <timeout>60s</timeout>
+                    <url>http://{HOST.IP}/cgi-bin/rknget/rkn/webapi.py?module=api.monitoring&amp;method=getBlockedWildcardDNSCount&amp;srcenttys=https</url>
                     <query_fields/>
                     <posts/>
                     <status_codes>200</status_codes>
