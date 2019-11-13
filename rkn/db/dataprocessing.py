@@ -165,7 +165,7 @@ def updateContentPresence(dump_id, disabledIDList=[]):
     :return: True
     """
     cursor.execute(
-        '''UPDATE content SET in_dump = True
+        '''UPDATE content SET in_dump = False
         WHERE outer_id = ANY(%s)''',
         (disabledIDList,)
     )
