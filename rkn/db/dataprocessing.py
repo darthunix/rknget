@@ -150,7 +150,7 @@ def getOuterIDHashes():
     cursor.execute(
         '''SELECT outer_id, hash
         FROM content
-        WHERE in_dump = True
+        WHERE in_dump is True
         '''
     )
     return {c['outer_id']:c['hash'] for c in cursor}
@@ -165,14 +165,14 @@ def updateContentPresence(dump_id, disabledIDList=[]):
     :return: True
     """
     cursor.execute(
-        '''UPDATE content SET in_dump = True
+        '''UPDATE content SET in_dump is True
         WHERE outer_id = ANY(%s)''',
         (disabledIDList,)
     )
 
     cursor.execute(
         '''UPDATE content SET last_dump_id = %s
-        WHERE in_dump = True''',
+        WHERE in_dump is True''',
         (dump_id,)
     )
     connection.commit()
