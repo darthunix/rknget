@@ -16,7 +16,7 @@ def getResourcesByBlocktype(entitytype, blocktype):
         JOIN content ON content_id = content.id 
         JOIN blocktype ON blocktype_id = blocktype.id
         JOIN entitytype ON entitytype_id = entitytype.id
-        WHERE in_dump is True AND entitytype.name = %s
+        WHERE in_dump = True AND entitytype.name = %s
         AND blocktype.name = %s
         ''',
         (entitytype, blocktype,)
@@ -40,7 +40,7 @@ def getResourcesByEntitytype(entitytype, srcentty):
         JOIN content ON r1.content_id = content.id
         WHERE e1.name = %s
         AND e2.name = %s
-        AND in_dump is True
+        AND in_dump = True
         ''',
         (entitytype, srcentty,)
     )

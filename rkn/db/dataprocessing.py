@@ -42,7 +42,7 @@ def updateDumpCheckTime():
     cursor.execute(
         '''UPDATE dumpinfo SET check_time = %s
         WHERE id = (SELECT MAX(id) FROM dumpinfo)
-        AND parsed is True
+        AND parsed = True
         ''', (now,)
     )
     connection.commit()
@@ -150,7 +150,7 @@ def getOuterIDHashes():
     cursor.execute(
         '''SELECT outer_id, hash
         FROM content
-        WHERE in_dump is True
+        WHERE in_dump = True
         '''
     )
     return {c['outer_id']:c['hash'] for c in cursor}
@@ -172,7 +172,7 @@ def updateContentPresence(dump_id, disabledIDList=[]):
 
     cursor.execute(
         '''UPDATE content SET last_dump_id = %s
-        WHERE in_dump is True''',
+        WHERE in_dump = True''',
         (dump_id,)
     )
     connection.commit()
