@@ -56,7 +56,7 @@ def initConf(confpath, binpath):
     Loades YAML config
     :return: Configuration tree
     """
-    config = yaml.load(open(confpath))
+    config = yaml.load(open(confpath), Loader=yaml.FullLoader)
     if config['Global'].get('procname') is None:
         config['Global']['procname'] = binpath.split(os.path.sep)[-1].split('.')[0]
 
